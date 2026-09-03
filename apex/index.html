@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../styles.css?v=20260904">
 </head>
 <body data-route="apex" data-asset-prefix="../">
   <div class="ambient" aria-hidden="true"><div class="ambient-slides" id="backgroundSlides"></div><div class="ambient-wash"></div><div class="ambient-orb orb-left"></div><div class="ambient-orb orb-right"></div><div class="ambient-grain"></div></div>
@@ -28,7 +28,7 @@
   </main>
 
   <div class="modal-backdrop" id="settingsModal" aria-hidden="true"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="modal-top"><div><span class="kicker">SYNC / SETTINGS</span><h2 id="settingsTitle">GitHub 自动保存</h2></div><button class="close-button" id="closeSettings" type="button" aria-label="关闭">×</button></div><p class="modal-copy">把 Apex 传家宝记录保存到你的私有仓库。Token 只会保存在当前浏览器，不会写入网站代码。</p><div class="notice"><span>i</span><p>Fine-grained token 只需要目标仓库的 <b>Contents: Read and write</b> 权限。</p></div><div class="field-grid"><label>GitHub 用户名 / 组织<input id="ghOwner" placeholder="your-name"></label><label>仓库名<input id="ghRepo" placeholder="apex-loot-data"></label><label>分支<input id="ghBranch" placeholder="main"></label><label>数据文件路径<input id="ghPath" placeholder="data/apex-records.json"></label></div><label class="field-full">Fine-grained Personal Access Token<input id="ghToken" type="password" autocomplete="off" placeholder="github_pat_…"></label><div class="modal-actions"><button class="outline-button" id="testGithubBtn" type="button">测试连接</button><button class="primary-button" id="saveSettingsBtn" type="button">保存设置</button></div><p class="modal-status" id="modalStatus" role="status"></p></section></div>
-  <div class="toast" id="toast" role="status"></div><script src="../app.js"></script>
+  <div class="toast" id="toast" role="status"></div><script src="../app.js?v=20260904"></script>
   <script>
     document.querySelectorAll('a[data-nav="apex"]').forEach((link) => {
       if (link.getAttribute("href") === "./") link.setAttribute("href", "./index.html");
