@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Apex Legends 传家宝开箱记录与 500 包保底进度。">
+  <title>Apex 开箱记录 · ererethka の 宝藏之地</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body data-route="apex" data-asset-prefix="../">
+  <div class="ambient" aria-hidden="true"><div class="ambient-slides" id="backgroundSlides"></div><div class="ambient-wash"></div><div class="ambient-orb orb-left"></div><div class="ambient-orb orb-right"></div><div class="ambient-grain"></div></div>
+  <header class="site-nav" id="siteNav"><div class="nav-inner"><a class="brand" href="../index.html#home" data-nav="home" aria-label="返回首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand-copy"><strong>ererethka <em>の</em> 宝藏之地</strong><small>PERSONAL DIGITAL GARDEN</small></span></a><nav class="desktop-links" aria-label="主导航"><a href="../index.html#home" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">项目</a><a href="../index.html#timeline" data-nav="timeline">归档</a><a href="../index.html#photowall" data-nav="photowall">照片墙</a><a href="../index.html#music" data-nav="music">音乐</a><a href="./" data-nav="apex">Apex记录</a><a href="../index.html#about" data-nav="about">关于</a></nav><div class="nav-actions"><button class="theme-button" id="themeButton" type="button" title="切换日夜主题" aria-label="切换日夜主题"><span id="themeIcon">✦</span><span id="themeLabel">夜间</span></button><button class="icon-button" id="settingsBtn" type="button" title="GitHub 同步设置" aria-label="打开 GitHub 同步设置">⚙</button><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="打开导航" aria-expanded="false">☰</button></div></div><nav class="mobile-links" id="mobileLinks" aria-label="移动端导航"><a href="../index.html#home" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">项目</a><a href="../index.html#timeline" data-nav="timeline">归档</a><a href="../index.html#photowall" data-nav="photowall">照片墙</a><a href="../index.html#music" data-nav="music">音乐</a><a href="./" data-nav="apex">Apex记录</a><a href="../index.html#about" data-nav="about">关于</a></nav></header>
+
+  <main class="page-container apex-page">
+    <div class="apex-toolbar"><span>个人开箱档案 · Local first</span><span class="sync-pill" id="syncPill"><i></i><span id="syncLabel">Local draft</span></span><button class="outline-button" id="loadGithubBtn" type="button">从 GitHub 拉取</button></div>
+    <section class="apex-hero"><div><span class="kicker">APEX LEGENDS / ARCHIVE</span><h1>把每一次心跳，<em>都记录下来。</em></h1><p>这里只关注传家宝。每 500 包是一个循环，提前出现红光会重置进度，把好运留在你的私人星图上。</p></div><div class="apex-hero-side">HEIRLOOM GUARANTEE<strong>500 PACKS</strong></div></section>
+    <section class="apex-stats" aria-label="开箱统计"><article class="glass-card apex-stat"><span>总开箱数</span><strong id="totalPacks">0</strong><small>ALL PACKS OPENED</small><i class="stat-symbol">↗</i></article><article class="glass-card apex-stat"><span>当前保底进度</span><strong id="pityProgress">0 / 500</strong><small>CURRENT CYCLE</small><i class="stat-symbol">◌</i></article><article class="glass-card apex-stat"><span>传家宝总数</span><strong id="heirloomCount">0</strong><small>HEIRLOOMS FOUND</small><i class="stat-symbol">✦</i></article><article class="glass-card apex-stat"><span>距离下一保底</span><strong id="packsToPity">500</strong><small>PACKS TO GUARANTEE</small><i class="stat-symbol">⚡</i></article></section>
+
+    <section class="apex-workspace"><article class="glass-card apex-panel"><div class="panel-heading"><div><span class="kicker">NEW ENTRY / 01</span><h2>记录一次开箱</h2></div><span class="mini-label">LOCAL FIRST</span></div><div class="rule-note"><strong>RULE</strong><span>只需记下开了多少包，以及本次是否出了传家宝。蓝紫金等普通掉落不会进入档案。</span></div><form id="recordForm"><div class="field-row"><label class="field">开箱日期<input id="date" type="date" required></label><label class="field">本次开了几包<div class="number-input"><input id="packs" type="number" min="1" max="9999" value="1" required><span>PACKS</span></div></label></div><label class="heirloom-toggle"><input id="heirloom" type="checkbox"><span class="toggle-mark">✦</span><span><b>本次开出传家宝</b><small>勾选后，当前 500 包进度会重置为 0</small></span></label><label class="field">传家宝名称 <small>（可选）</small><input id="heirloomName" maxlength="80" placeholder="例如：Kunai / 太阳系统清晰度皮肤"></label><div class="form-foot"><span class="required-note"><b>*</b> 只记录开箱次数与传家宝</span><button class="primary-button" type="submit">保存这次记录 →</button></div></form></article>
+      <aside class="glass-card apex-panel insight-panel"><div class="panel-heading"><div><span class="kicker">YOUR CYCLE / 02</span><h2>保底星图</h2></div><span class="mini-label">500 RULE</span></div><div class="vibe-face" id="vibeFace">^_^</div><p class="vibe-title" id="vibeTitle">新的循环，新的希望</p><p class="vibe-copy" id="vibeCopy">每累计一包，就距离下一次保底更近一步。</p><div class="insight-line"><span>当前循环</span><strong id="cycleText">0 / 500 packs</strong></div><div class="insight-line"><span>上次传家宝</span><strong id="lastHeirloom">尚未记录</strong></div></aside></section>
+
+    <section class="glass-card history-panel" id="history-section"><div class="section-label"><span>ARCHIVE / 03</span><span>RED GLOW ONLY</span></div><h2>开箱记录</h2><div id="emptyState" class="empty-state"><div class="empty-glyph">✦</div><h3>档案还是空的</h3><p>记录第一次开箱，开始你的 500 包循环。</p><button class="outline-button" id="emptyCta" type="button">开始记录 →</button></div><div id="recordsList" class="records-list"></div></section>
+    <footer class="site-footer apex-footer"><span>ererethka の 宝藏之地 · APEX ARCHIVE</span><span>Inspired by <a href="https://github.com/heiehiehi/XinghuisamaBlogs" target="_blank" rel="noopener">XHBlogs</a> · CC BY-NC 4.0</span></footer>
+  </main>
+
+  <div class="modal-backdrop" id="settingsModal" aria-hidden="true"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="modal-top"><div><span class="kicker">SYNC / SETTINGS</span><h2 id="settingsTitle">GitHub 自动保存</h2></div><button class="close-button" id="closeSettings" type="button" aria-label="关闭">×</button></div><p class="modal-copy">把 Apex 传家宝记录保存到你的私有仓库。Token 只会保存在当前浏览器，不会写入网站代码。</p><div class="notice"><span>i</span><p>Fine-grained token 只需要目标仓库的 <b>Contents: Read and write</b> 权限。</p></div><div class="field-grid"><label>GitHub 用户名 / 组织<input id="ghOwner" placeholder="your-name"></label><label>仓库名<input id="ghRepo" placeholder="apex-loot-data"></label><label>分支<input id="ghBranch" placeholder="main"></label><label>数据文件路径<input id="ghPath" placeholder="data/apex-records.json"></label></div><label class="field-full">Fine-grained Personal Access Token<input id="ghToken" type="password" autocomplete="off" placeholder="github_pat_…"></label><div class="modal-actions"><button class="outline-button" id="testGithubBtn" type="button">测试连接</button><button class="primary-button" id="saveSettingsBtn" type="button">保存设置</button></div><p class="modal-status" id="modalStatus" role="status"></p></section></div>
+  <div class="toast" id="toast" role="status"></div><script src="../app.js"></script>
+  <script>
+    document.querySelectorAll('a[data-nav="apex"]').forEach((link) => {
+      if (link.getAttribute("href") === "./") link.setAttribute("href", "./index.html");
+    });
+  </script>
+</body>
+</html>
