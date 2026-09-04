@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#0b1020">
   <meta name="description" content="ererethka の宝藏之地：个人博客与 Apex Legends 开箱记录。">
   <title>ererethka の宝藏之地</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260904">
+  <link rel="stylesheet" href="styles-polish.css?v=20260904-2">
 </head>
 <body data-route="home" data-asset-prefix="">
   <div class="ambient" aria-hidden="true">
@@ -47,60 +48,87 @@
     </nav>
   </header>
 
-  <main class="page-container reference-container" id="home">
-    <section class="search-wrap reference-search" aria-label="站内搜索">
-      <div class="reference-search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="siteSearch" type="search" placeholder="搜索标题、描述或标签…" autocomplete="off"><kbd>⌘ K</kbd></div>
-      <div class="search-results reference-search-results" id="searchResults" hidden></div>
+  <main class="home-redesign page-container" id="home">
+    <section class="home-search search-wrap" aria-label="站内搜索">
+      <div class="home-search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="siteSearch" type="search" placeholder="搜索标题、描述或标签…" autocomplete="off"><kbd>⌘ K</kbd></div>
+      <div class="search-results home-search-results" id="searchResults" hidden></div>
     </section>
 
-    <section class="reference-row reference-profile-row">
-      <article class="glass-card reference-profile" id="aboutPreview">
-        <div class="reference-profile-top">
-          <div class="reference-avatar"><img src="siamese-cat.png" alt="暹罗猫头像"></div>
-          <div class="reference-profile-copy"><span class="reference-eyebrow">WELCOME BACK</span><h1>ererethka</h1><p>在代码、学术与游戏之间穿梭的普通人。把正在发生的灵感，安静地收进自己的数字花园。</p></div>
+    <section class="home-hero" aria-label="个人主页">
+      <div class="hero-copy">
+        <span class="home-kicker">PERSONAL DIGITAL GARDEN · 2026</span>
+        <div class="hero-profile-line">
+          <div class="hero-avatar"><img src="siamese-cat.png" alt="暹罗猫头像"></div>
+          <div>
+            <p class="hero-greeting">WELCOME BACK</p>
+            <h1>ererethka</h1>
+          </div>
         </div>
-        <div class="reference-profile-bottom">
-          <div class="reference-stats"><div><strong id="homePostCount">0</strong><span>文章</span></div><div><strong id="homeChatterCount">0</strong><span>杂谈</span></div><div><strong id="homePhotoCount">5</strong><span>照片</span></div></div>
-          <div class="social-row"><a href="https://github.com/ererethka" target="_blank" rel="noopener" aria-label="GitHub">GH</a><button type="button" data-copy="2601103442" aria-label="复制 QQ">QQ</button><button type="button" data-copy="" aria-label="复制微信">WX</button></div>
+        <p class="hero-intro">在代码、学术与游戏之间穿梭的普通人。把正在发生的灵感，安静地收进自己的数字花园。</p>
+        <div class="hero-meta">
+          <div class="hero-stats"><span><strong id="homePostCount">0</strong> 文章</span><span><strong id="homeChatterCount">0</strong> 杂谈</span><span><strong id="homePhotoCount">5</strong> 照片</span></div>
+          <div class="social-row" aria-label="联系方式"><a href="https://github.com/ererethka" target="_blank" rel="noopener" aria-label="GitHub">GH</a><button type="button" data-copy="2601103442" aria-label="复制 QQ">QQ</button><button type="button" data-copy="" aria-label="复制微信">WX</button></div>
         </div>
-      </article>
-
-      <article class="glass-card reference-player" id="musicPreview">
-        <div class="reference-player-glow"></div>
-        <div class="reference-player-head"><span class="reference-pill">CLOUD MUSIC</span><span class="reference-online"><i></i> ONLINE</span></div>
-        <div class="reference-player-main"><div class="reference-disc"><span>♫</span></div><div><h2>给今天的背景音乐</h2><p id="musicLine">让旋律替你保存此刻的心情。</p></div></div>
-        <div class="reference-player-controls"><button type="button" class="round-control" id="musicPlay" aria-label="播放或暂停">▶</button><span class="wave"><i></i><i></i><i></i><i></i><i></i></span><a href="#music">打开音乐页 →</a></div>
-      </article>
-    </section>
-
-    <section class="glass-card reference-lyric" id="music" aria-label="歌词预览">
-      <div class="reference-lyric-wave"><i></i><i></i><i></i><i></i><i></i></div><p>把今天的心情，交给一段旋律慢慢保存。</p><span class="reference-lyric-note">♫</span>
-    </section>
-
-    <section class="reference-row reference-content-row" id="projects">
-      <article class="glass-card reference-latest">
-        <img src="assets/backgrounds/dark/solo-leveling.jpg" alt="最近记录背景">
-        <span class="reference-image-overlay"></span>
-        <div class="reference-latest-copy"><div class="reference-badges"><span>Latest Insight</span><small>2026.03.23</small></div><h2>正在进行的事情</h2><p>把喜欢的工具、实验和开箱记录整理成一个真正属于自己的空间。</p></div>
-        <div class="reference-dots"><i class="active"></i><i></i><i></i><i></i><i></i></div>
-      </article>
-
-      <div class="reference-side">
-        <a class="glass-card reference-photo" id="photowall" href="#photowall"><img src="assets/backgrounds/light/anime-spring.jpg" alt="照片墙预览"><span class="reference-photo-overlay"></span><div><span class="reference-eyebrow">PHOTO WALL</span><h2>照片墙</h2><p>把路过的风景，留在这里。</p></div></a>
-        <div class="reference-side-bottom">
-          <article class="glass-card reference-chatter" id="timeline"><div class="reference-label"><span>MOMENTS</span><span class="reference-arrow">↗</span></div><h3>今天也在慢慢变好。</h3><p>记录一些没有标题的想法，等它们自己长成故事。</p><div class="reference-moment-line"><i></i><span>最近更新 · 刚刚</span></div></article>
-          <button class="glass-card theme-card reference-theme" id="themeCard" type="button"><span class="theme-orb" id="themeOrb">✿</span><strong id="themeCardTitle">日间模式</strong><small id="themeCardCopy">落樱漫舞的清晨</small><span class="theme-hint">点击切换</span></button>
-        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-art-image"></div>
+        <div class="hero-art-shade"></div>
+        <span class="hero-art-word">ARCHIVE</span>
+        <span class="hero-art-index">01 / 04</span>
       </div>
     </section>
 
-    <section class="glass-card reference-dashboard" aria-label="站点状态">
-      <div class="reference-clock"><span id="clock">00:00:00</span><small>LOCAL TIME / SHANGHAI</small></div>
-      <div class="reference-dashboard-copy"><span class="status-dot"></span><div><h2>系统稳定运行中</h2><p>这个站点已经安静地陪伴了 <strong id="uptime">0 天</strong>。今天也欢迎你随时回来。</p></div></div>
-      <div class="reference-badges"><span>HTML</span><span>CSS</span><span>VANILLA JS</span><span>GITHUB PAGES</span></div>
+    <section class="home-feature-grid" id="projects">
+      <article class="home-feature" aria-label="Latest Insight">
+        <img src="assets/backgrounds/dark/solo-leveling.jpg" alt="最近记录背景">
+        <div class="feature-shade"></div>
+        <div class="feature-topline"><span>Latest Insight</span><span>2026.03.23</span></div>
+        <div class="feature-copy"><p>正在进行的事情</p><h2>把喜欢的工具、实验和开箱记录，整理成一个真正属于自己的空间。</h2><a href="#timeline">查看最近记录 <span>↗</span></a></div>
+        <div class="feature-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i></div>
+      </article>
+
+      <aside class="home-rail">
+        <a class="photo-feature" id="photowall" href="#photowall">
+          <img src="assets/backgrounds/light/anime-spring.jpg" alt="照片墙预览">
+          <div class="photo-shade"></div>
+          <div class="photo-copy"><span>PHOTO WALL</span><h2>路过的风景</h2><p>把生活里值得留下的瞬间，留在这里。</p></div>
+        </a>
+        <div class="rail-split">
+          <article class="moment-feature" id="timeline">
+            <span class="home-kicker">MOMENTS</span>
+            <h3>今天也在慢慢变好。</h3>
+            <p>记录一些没有标题的想法，等它们自己长成故事。</p>
+            <span class="moment-time">最近更新 · 刚刚</span>
+          </article>
+          <button class="theme-feature" id="themeCard" type="button">
+            <span class="theme-orb" id="themeOrb">✿</span><span class="home-kicker">ATMOSPHERE</span><strong id="themeCardTitle">日间模式</strong><small id="themeCardCopy">落樱漫舞的清晨</small><em>点击切换</em>
+          </button>
+        </div>
+      </aside>
     </section>
 
-    <section class="reference-about glass-card" id="about"><span class="reference-eyebrow">ABOUT</span><h2>关于这个空间</h2><p>这是一个由我亲手维护的静态博客外壳。数据与记录属于我自己，页面可以一直慢慢长大。</p></section>
+    <section class="home-photo-strip" aria-label="照片墙精选">
+      <div class="section-heading"><div><span class="home-kicker">SELECTED MOMENTS</span><h2>照片墙</h2></div><a href="#photowall">VIEW ALL ↗</a></div>
+      <div class="photo-mosaic">
+        <figure><img src="assets/backgrounds/light/hu-tao.jpg" alt="胡桃主题插画"><figcaption>01 · 雾与火</figcaption></figure>
+        <figure><img src="assets/backgrounds/light/station-girl.jpg" alt="车站少女主题插画"><figcaption>02 · 等一班车</figcaption></figure>
+        <figure><img src="assets/backgrounds/dark/kaisel.jpg" alt="夜色主题插画"><figcaption>03 · 夜航</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="home-music" id="music" aria-label="Cloud Music">
+      <div class="music-identity"><span class="home-kicker">CLOUD MUSIC</span><h2>给今天的背景音乐</h2><p id="musicLine">让旋律替你保存此刻的心情。</p></div>
+      <div class="music-disc" id="musicPreview"><span>♫</span></div>
+      <div class="music-control-line"><button class="round-control" id="musicPlay" type="button" aria-label="播放或暂停">▶</button><span class="music-wave"><i></i><i></i><i></i><i></i><i></i></span><a href="#music">NOW PLAYING · OPEN</a></div>
+    </section>
+
+    <section class="home-status" aria-label="站点状态">
+      <div class="status-time"><span id="clock">00:00:00</span><small>LOCAL TIME / SHANGHAI</small></div>
+      <div class="status-copy"><span class="status-dot"></span><div><strong>系统稳定运行中</strong><p>这个站点已经安静地陪伴了 <b id="uptime">0 天</b>。今天也欢迎你随时回来。</p></div></div>
+      <div class="status-tech"><span>HTML</span><span>CSS</span><span>VANILLA JS</span><span>GITHUB PAGES</span></div>
+    </section>
+
+    <section class="home-about" id="about"><span class="home-kicker">ABOUT</span><div><h2>关于这个空间</h2><p>这是一个由我亲手维护的静态博客外壳。数据与记录属于我自己，页面可以一直慢慢长大。</p></div></section>
 
     <footer class="site-footer"><span>ererethka の 宝藏之地 · PERSONAL DIGITAL GARDEN</span><span>Inspired by <a href="https://github.com/heiehiehi/XinghuisamaBlogs" target="_blank" rel="noopener">XHBlogs</a> · CC BY-NC 4.0</span></footer>
   </main>
