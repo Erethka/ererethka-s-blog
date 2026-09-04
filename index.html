@@ -13,123 +13,42 @@
   <link rel="stylesheet" href="styles-polish.css?v=20260904-2">
 </head>
 <body data-route="home" data-asset-prefix="">
-  <div class="ambient" aria-hidden="true">
-    <div class="ambient-slides" id="backgroundSlides"></div>
-    <div class="ambient-wash"></div>
-    <div class="ambient-orb orb-left"></div>
-    <div class="ambient-orb orb-right"></div>
-    <div class="ambient-grain"></div>
-  </div>
+  <div class="ambient" aria-hidden="true"><div class="ambient-slides" id="backgroundSlides"></div><div class="ambient-wash"></div><div class="ambient-orb orb-left"></div><div class="ambient-orb orb-right"></div><div class="ambient-grain"></div></div>
 
   <header class="site-nav" id="siteNav">
     <div class="nav-inner">
-      <a class="brand" href="#home" data-nav="home" aria-label="返回首页">
-        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="brand-copy"><strong>ererethka <em>の</em> 宝藏之地</strong><small>PERSONAL DIGITAL GARDEN</small></span>
-      </a>
-      <nav class="desktop-links" aria-label="主导航">
-        <a href="#home" data-nav="home">首页</a>
-        <a href="#projects" data-nav="projects">项目</a>
-        <a href="#timeline" data-nav="timeline">归档</a>
-        <a href="#photowall" data-nav="photowall">照片墙</a>
-        <a href="#music" data-nav="music">音乐</a>
-        <a href="apex/index.html" data-nav="apex">Apex记录</a>
-        <a href="#about" data-nav="about">关于</a>
-      </nav>
-      <div class="nav-actions">
-        <button class="theme-button" id="themeButton" type="button" title="切换日夜主题" aria-label="切换日夜主题"><span id="themeIcon">✦</span><span id="themeLabel">夜间</span></button>
-        <span class="sync-pill" id="syncPill"><i></i><span id="syncLabel">Local draft</span></span>
-        <button class="icon-button" id="settingsBtn" type="button" title="GitHub 同步设置" aria-label="打开 GitHub 同步设置">⚙</button>
-        <button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="打开导航" aria-expanded="false">☰</button>
-      </div>
+      <a class="brand" href="#home" data-nav="home" aria-label="返回首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand-copy"><strong>ererethka <em>の</em> 宝藏之地</strong><small>PERSONAL DIGITAL GARDEN</small></span></a>
+      <nav class="desktop-links" aria-label="主导航"><a href="#home" data-nav="home">首页</a><a href="#projects" data-nav="projects">项目</a><a href="#timeline" data-nav="timeline">归档</a><a href="#photowall" data-nav="photowall">照片墙</a><a href="#music" data-nav="music">音乐</a><a href="apex/index.html" data-nav="apex">Apex记录</a><a href="#about" data-nav="about">关于</a></nav>
+      <div class="nav-actions"><button class="theme-button" id="themeButton" type="button" title="切换日夜主题" aria-label="切换日夜主题"><span id="themeIcon">✦</span><span id="themeLabel">夜间</span></button><span class="sync-pill" id="syncPill"><i></i><span id="syncLabel">Local draft</span></span><button class="icon-button" id="settingsBtn" type="button" title="GitHub 同步设置" aria-label="打开 GitHub 同步设置">⚙</button><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="打开导航" aria-expanded="false">☰</button></div>
     </div>
-    <nav class="mobile-links" id="mobileLinks" aria-label="移动端导航">
-      <a href="#home" data-nav="home">首页</a><a href="#projects" data-nav="projects">项目</a><a href="#timeline" data-nav="timeline">归档</a><a href="#photowall" data-nav="photowall">照片墙</a><a href="#music" data-nav="music">音乐</a><a href="apex/index.html" data-nav="apex">Apex记录</a><a href="#about" data-nav="about">关于</a>
-    </nav>
+    <nav class="mobile-links" id="mobileLinks" aria-label="移动端导航"><a href="#home" data-nav="home">首页</a><a href="#projects" data-nav="projects">项目</a><a href="#timeline" data-nav="timeline">归档</a><a href="#photowall" data-nav="photowall">照片墙</a><a href="#music" data-nav="music">音乐</a><a href="apex/index.html" data-nav="apex">Apex记录</a><a href="#about" data-nav="about">关于</a></nav>
   </header>
 
   <main class="home-redesign page-container" id="home">
-    <section class="home-search search-wrap" aria-label="站内搜索">
-      <div class="home-search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="siteSearch" type="search" placeholder="搜索标题、描述或标签…" autocomplete="off"><kbd>⌘ K</kbd></div>
-      <div class="search-results home-search-results" id="searchResults" hidden></div>
-    </section>
+    <section class="home-search search-wrap" aria-label="站内搜索"><div class="home-search-box"><span class="search-icon" aria-hidden="true">⌕</span><input id="siteSearch" type="search" placeholder="搜索标题、描述或标签…" autocomplete="off"><kbd>⌘ K</kbd></div><div class="search-results home-search-results" id="searchResults" hidden></div></section>
 
     <section class="home-hero" aria-label="个人主页">
-      <div class="hero-copy">
+      <div class="home-copy hero-copy">
         <span class="home-kicker">PERSONAL DIGITAL GARDEN · 2026</span>
-        <div class="hero-profile-line">
-          <div class="hero-avatar"><img src="siamese-cat.png" alt="暹罗猫头像"></div>
-          <div>
-            <p class="hero-greeting">WELCOME BACK</p>
-            <h1>ererethka</h1>
-          </div>
-        </div>
+        <div class="hero-profile-line"><div class="hero-avatar"><img src="siamese-cat.png" alt="暹罗猫头像"></div><div><p class="hero-greeting">WELCOME BACK</p><h1>ererethka</h1></div></div>
         <p class="hero-intro">在代码、学术与游戏之间穿梭的普通人。把正在发生的灵感，安静地收进自己的数字花园。</p>
-        <div class="hero-meta">
-          <div class="hero-stats"><span><strong id="homePostCount">0</strong> 文章</span><span><strong id="homeChatterCount">0</strong> 杂谈</span><span><strong id="homePhotoCount">5</strong> 照片</span></div>
-          <div class="social-row" aria-label="联系方式"><a href="https://github.com/ererethka" target="_blank" rel="noopener" aria-label="GitHub">GH</a><button type="button" data-copy="2601103442" aria-label="复制 QQ">QQ</button><button type="button" data-copy="" aria-label="复制微信">WX</button></div>
-        </div>
+        <div class="hero-meta"><div class="hero-stats"><span><strong id="homePostCount">0</strong> 文章</span><span><strong id="homeChatterCount">0</strong> 杂谈</span><span><strong id="homePhotoCount">5</strong> 照片</span></div><div class="social-row" aria-label="联系方式"><a href="https://github.com/ererethka" target="_blank" rel="noopener" aria-label="GitHub">GH</a><button type="button" data-copy="2601103442" aria-label="复制 QQ">QQ</button><button type="button" data-copy="" aria-label="复制微信">WX</button></div></div>
       </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="hero-art-image"></div>
-        <div class="hero-art-shade"></div>
-        <span class="hero-art-word">ARCHIVE</span>
-        <span class="hero-art-index">01 / 04</span>
-      </div>
+      <div class="hero-art" aria-hidden="true"><div class="hero-art-image"></div><div class="hero-art-shade"></div><span class="hero-art-word">ARCHIVE</span><span class="hero-art-index">01 / 04</span></div>
     </section>
 
     <section class="home-feature-grid" id="projects">
-      <article class="home-feature" aria-label="Latest Insight">
-        <img src="assets/backgrounds/dark/solo-leveling.jpg" alt="最近记录背景">
-        <div class="feature-shade"></div>
-        <div class="feature-topline"><span>Latest Insight</span><span>2026.03.23</span></div>
-        <div class="feature-copy"><p>正在进行的事情</p><h2>把喜欢的工具、实验和开箱记录，整理成一个真正属于自己的空间。</h2><a href="#timeline">查看最近记录 <span>↗</span></a></div>
-        <div class="feature-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i></div>
-      </article>
-
-      <aside class="home-rail">
-        <a class="photo-feature" id="photowall" href="#photowall">
-          <img src="assets/backgrounds/light/anime-spring.jpg" alt="照片墙预览">
-          <div class="photo-shade"></div>
-          <div class="photo-copy"><span>PHOTO WALL</span><h2>路过的风景</h2><p>把生活里值得留下的瞬间，留在这里。</p></div>
-        </a>
-        <div class="rail-split">
-          <article class="moment-feature" id="timeline">
-            <span class="home-kicker">MOMENTS</span>
-            <h3>今天也在慢慢变好。</h3>
-            <p>记录一些没有标题的想法，等它们自己长成故事。</p>
-            <span class="moment-time">最近更新 · 刚刚</span>
-          </article>
-          <button class="theme-feature" id="themeCard" type="button">
-            <span class="theme-orb" id="themeOrb">✿</span><span class="home-kicker">ATMOSPHERE</span><strong id="themeCardTitle">日间模式</strong><small id="themeCardCopy">落樱漫舞的清晨</small><em>点击切换</em>
-          </button>
-        </div>
-      </aside>
+      <article class="home-feature" aria-label="Latest Insight"><img src="assets/backgrounds/dark/solo-leveling.jpg" alt="最近记录背景"><div class="feature-shade"></div><div class="feature-topline"><span>Latest Insight</span><span>2026.03.23</span></div><div class="feature-copy"><p>正在进行的事情</p><h2>把喜欢的工具、实验和开箱记录，整理成一个真正属于自己的空间。</h2><a href="#timeline">查看最近记录 <span>↗</span></a></div><div class="feature-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i></div></article>
+      <aside class="home-rail"><a class="photo-feature" id="photowall" href="#photowall"><img src="assets/backgrounds/light/anime-spring.jpg" alt="照片墙预览"><div class="photo-shade"></div><div class="photo-copy"><span>PHOTO WALL</span><h2>路过的风景</h2><p>把生活里值得留下的瞬间，留在这里。</p></div></a><div class="rail-split"><article class="moment-feature" id="timeline"><span class="home-kicker">MOMENTS</span><h3>今天也在慢慢变好。</h3><p>记录一些没有标题的想法，等它们自己长成故事。</p><span class="moment-time">最近更新 · 刚刚</span></article><button class="theme-feature" id="themeCard" type="button"><span class="theme-orb" id="themeOrb">✿</span><span class="home-kicker">ATMOSPHERE</span><strong id="themeCardTitle">日间模式</strong><small id="themeCardCopy">落樱漫舞的清晨</small><em>点击切换</em></button></div></aside>
     </section>
 
-    <section class="home-photo-strip" aria-label="照片墙精选">
-      <div class="section-heading"><div><span class="home-kicker">SELECTED MOMENTS</span><h2>照片墙</h2></div><a href="#photowall">VIEW ALL ↗</a></div>
-      <div class="photo-mosaic">
-        <figure><img src="assets/backgrounds/light/hu-tao.jpg" alt="胡桃主题插画"><figcaption>01 · 雾与火</figcaption></figure>
-        <figure><img src="assets/backgrounds/light/station-girl.jpg" alt="车站少女主题插画"><figcaption>02 · 等一班车</figcaption></figure>
-        <figure><img src="assets/backgrounds/dark/kaisel.jpg" alt="夜色主题插画"><figcaption>03 · 夜航</figcaption></figure>
-      </div>
-    </section>
+    <section class="home-photo-strip" aria-label="照片墙精选"><div class="section-heading"><div><span class="home-kicker">SELECTED MOMENTS</span><h2>照片墙</h2></div><a href="#photowall">VIEW ALL ↗</a></div><div class="photo-mosaic"><figure><img src="assets/backgrounds/light/hu-tao.jpg" alt="胡桃主题插画"><figcaption>01 · 雾与火</figcaption></figure><figure><img src="assets/backgrounds/light/station-girl.jpg" alt="车站少女主题插画"><figcaption>02 · 等一班车</figcaption></figure><figure><img src="assets/backgrounds/dark/kaisel.jpg" alt="夜色主题插画"><figcaption>03 · 夜航</figcaption></figure></div></section>
 
-    <section class="home-music" id="music" aria-label="Cloud Music">
-      <div class="music-identity"><span class="home-kicker">CLOUD MUSIC</span><h2>给今天的背景音乐</h2><p id="musicLine">让旋律替你保存此刻的心情。</p></div>
-      <div class="music-disc" id="musicPreview"><span>♫</span></div>
-      <div class="music-control-line"><button class="round-control" id="musicPlay" type="button" aria-label="播放或暂停">▶</button><span class="music-wave"><i></i><i></i><i></i><i></i><i></i></span><a href="#music">NOW PLAYING · OPEN</a></div>
-    </section>
+    <section class="home-music" id="music" aria-label="Cloud Music"><div class="music-identity"><span class="home-kicker">CLOUD MUSIC</span><h2>给今天的背景音乐</h2><p id="musicLine">让旋律替你保存此刻的心情。</p></div><div class="music-disc" id="musicPreview"><span>♫</span></div><div class="music-control-line"><button class="round-control" id="musicPlay" type="button" aria-label="播放或暂停">▶</button><span class="music-wave"><i></i><i></i><i></i><i></i><i></i></span><a href="#music">NOW PLAYING · OPEN</a></div></section>
 
-    <section class="home-status" aria-label="站点状态">
-      <div class="status-time"><span id="clock">00:00:00</span><small>LOCAL TIME / SHANGHAI</small></div>
-      <div class="status-copy"><span class="status-dot"></span><div><strong>系统稳定运行中</strong><p>这个站点已经安静地陪伴了 <b id="uptime">0 天</b>。今天也欢迎你随时回来。</p></div></div>
-      <div class="status-tech"><span>HTML</span><span>CSS</span><span>VANILLA JS</span><span>GITHUB PAGES</span></div>
-    </section>
+    <section class="home-status" aria-label="站点状态"><div class="status-time"><span id="clock">00:00:00</span><small>LOCAL TIME / SHANGHAI</small></div><div class="status-copy"><span class="status-dot"></span><div><strong>系统稳定运行中</strong><p>这个站点已经安静地陪伴了 <b id="uptime">0 天</b>。今天也欢迎你随时回来。</p></div></div><div class="status-tech"><span>HTML</span><span>CSS</span><span>VANILLA JS</span><span>GITHUB PAGES</span></div></section>
 
     <section class="home-about" id="about"><span class="home-kicker">ABOUT</span><div><h2>关于这个空间</h2><p>这是一个由我亲手维护的静态博客外壳。数据与记录属于我自己，页面可以一直慢慢长大。</p></div></section>
-
     <footer class="site-footer"><span>ererethka の 宝藏之地 · PERSONAL DIGITAL GARDEN</span><span>Inspired by <a href="https://github.com/heiehiehi/XinghuisamaBlogs" target="_blank" rel="noopener">XHBlogs</a> · CC BY-NC 4.0</span></footer>
   </main>
 
