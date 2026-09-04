@@ -50,7 +50,6 @@
   const lightboxImage = $("lightboxImage");
   const lightboxCaption = $("lightboxCaption");
   const lightboxCounter = $("lightboxCounter");
-
   let activeAlbum = null;
   let activePhoto = 0;
 
@@ -77,7 +76,7 @@
       return [album.title, album.date, album.description, ...album.photos.map((photo) => photo.caption)].join(" ").toLowerCase().includes(keyword);
     });
 
-    grid.innerHTML = visible.map((album, index) => {
+    grid.innerHTML = visible.map((album) => {
       const albumIndex = albums.indexOf(album);
       const preview = album.photos.slice(0, 3);
       return `<article class="album-card" data-album="${albumIndex}" tabindex="0" role="button" aria-label="打开相册 ${escapeHtml(album.title)}">
@@ -139,7 +138,7 @@
   function setOpen(element, open) {
     element.classList.toggle("open", open);
     element.setAttribute("aria-hidden", String(!open));
-    document.body.classList.toggle("modal-open", open);
+    document.body.classList.toggle("modal-open", albumModal.classList.contains("open") || lightbox.classList.contains("open"));
   }
 
   function escapeHtml(value) {
