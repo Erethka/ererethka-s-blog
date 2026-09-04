@@ -1,0 +1,12 @@
+/* Same three artwork sources used by the reference XHBlogs site. */
+.photo-ambient-image {
+  background-image: url("https://bu.dusays.com/2026/03/24/69c1e38b4c370.jpg") !important;
+}
+.photo-hero {
+  background-image: linear-gradient(110deg, rgba(14,19,38,.46), rgba(15,20,40,.18)), url("https://bu.dusays.com/2026/03/24/69c26fe4acdb5.jpg") !important;
+  background-position:center;
+  background-size:cover;
+}
+html[data-theme="light"] .photo-hero {
+  background-image: linear-gradient(110deg, rgba(255,255,255,.60), rgba(255,255,255,.24)), url("https://bu.dusays.com/2026/03/24/69c26fe4acdb5.jpg") !important;
+}
