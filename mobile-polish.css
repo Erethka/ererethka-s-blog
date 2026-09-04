@@ -1,0 +1,59 @@
+/* Mobile-only layout corrections for the redesigned homepage. */
+
+@media (max-width: 720px) {
+  /* Prevent the "正在进行的事情" label and copy from inheriting any
+     vertical writing/column layout from older homepage styles. */
+  .home-feature .feature-copy,
+  .home-feature .feature-copy p,
+  .home-feature .feature-copy h2,
+  .moment-feature,
+  .moment-feature h3,
+  .moment-feature p {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    word-break: normal;
+    overflow-wrap: break-word;
+    white-space: normal;
+  }
+
+  .home-feature .feature-copy p,
+  .home-feature .feature-copy h2 {
+    max-width: 100%;
+  }
+
+  .home-feature .feature-copy p {
+    line-height: 1.35;
+  }
+
+  .home-feature .feature-copy h2 {
+    line-height: 1.45;
+  }
+
+  .moment-feature h3,
+  .moment-feature p {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .home-feature .feature-copy {
+    right: 18px;
+    bottom: 18px;
+    left: 18px;
+  }
+
+  .home-feature .feature-copy h2 {
+    font-size: 21px;
+    line-height: 1.5;
+  }
+
+  .moment-feature h3 {
+    font-size: 17px;
+    line-height: 1.45;
+  }
+
+  .moment-feature p {
+    font-size: 10px;
+    line-height: 1.8;
+  }
+}
