@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1023">
+  <meta name="description" content="ererethka の宝藏之地 · 独立照片墙。按相册浏览生活与兴趣的影像记录。">
+  <title>照片墙 · ererethka の 宝藏之地</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css?v=20260904">
+  <link rel="stylesheet" href="photowall.css?v=20260904-1">
+</head>
+<body data-route="photowall">
+  <div class="photo-ambient" aria-hidden="true">
+    <div class="photo-ambient-image"></div>
+    <div class="photo-ambient-wash"></div>
+    <div class="photo-ambient-orb photo-orb-left"></div>
+    <div class="photo-ambient-orb photo-orb-right"></div>
+    <div class="photo-ambient-grain"></div>
+  </div>
+
+  <header class="photo-nav">
+    <div class="photo-nav-inner">
+      <a class="photo-brand" href="../index.html" aria-label="返回首页">
+        <span class="photo-brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span><strong>ererethka <em>の</em> 宝藏之地</strong><small>PERSONAL DIGITAL GARDEN</small></span>
+      </a>
+      <nav class="photo-desktop-links" aria-label="照片墙导航">
+        <a href="../index.html">首页</a>
+        <a class="active" href="index.html" aria-current="page">照片墙</a>
+        <a href="../apex/index.html">Apex记录</a>
+        <a href="../index.html#about">关于</a>
+      </nav>
+      <div class="photo-nav-actions">
+        <button class="photo-theme-button" id="themeButton" type="button" aria-label="切换日夜主题"><span id="themeIcon">✦</span><span id="themeLabel">夜间</span></button>
+        <button class="photo-menu-button" id="menuButton" type="button" aria-label="打开导航" aria-expanded="false">☰</button>
+      </div>
+    </div>
+    <nav class="photo-mobile-links" id="mobileLinks" aria-label="移动端导航">
+      <a href="../index.html">首页</a>
+      <a class="active" href="index.html" aria-current="page">照片墙</a>
+      <a href="../apex/index.html">Apex记录</a>
+      <a href="../index.html#about">关于</a>
+    </nav>
+  </header>
+
+  <main class="photo-page">
+    <section class="photo-hero">
+      <div class="photo-hero-copy">
+        <span class="photo-kicker">PHOTO WALL · ARCHIVE</span>
+        <h1>光影画廊</h1>
+        <p>定格时间，封存生活里值得回看的每一次心跳。</p>
+        <div class="photo-hero-meta"><span id="albumCount">0 个相册</span><i></i><span id="photoCount">0 张照片</span></div>
+      </div>
+      <div class="photo-hero-index" aria-hidden="true"><strong>02</strong><span>/ 04</span></div>
+    </section>
+
+    <section class="photo-toolbar" aria-label="照片墙工具栏">
+      <div class="photo-section-title"><span class="photo-kicker">COLLECTIONS</span><h2>相册</h2></div>
+      <label class="photo-search"><span aria-hidden="true">⌕</span><input id="photoSearch" type="search" placeholder="搜索相册名或照片描述…" autocomplete="off"></label>
+    </section>
+
+    <section class="album-grid" id="albumGrid" aria-live="polite"></section>
+    <p class="empty-state" id="emptyState" hidden>没有找到匹配的相册。</p>
+
+    <footer class="photo-footer">
+      <a href="../index.html">← 返回首页</a>
+      <span>ererethka の 宝藏之地 · PHOTO ARCHIVE</span>
+      <span>Inspired by <a href="https://github.com/heiehiehi/XinghuisamaBlogs" target="_blank" rel="noopener">XHBlogs</a> · CC BY-NC 4.0</span>
+    </footer>
+  </main>
+
+  <div class="album-modal" id="albumModal" aria-hidden="true">
+    <section class="album-dialog" role="dialog" aria-modal="true" aria-labelledby="albumTitle">
+      <header class="album-dialog-head">
+        <div><span class="photo-kicker" id="albumDate">ALBUM</span><h2 id="albumTitle">相册</h2><p id="albumDescription"></p></div>
+        <button class="close-photo" id="closeAlbum" type="button" aria-label="关闭相册">×</button>
+      </header>
+      <div class="album-photo-grid" id="albumPhotoGrid"></div>
+    </section>
+  </div>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox-close" id="closeLightbox" type="button" aria-label="关闭照片查看器">×</button>
+    <button class="lightbox-arrow lightbox-prev" id="prevPhoto" type="button" aria-label="上一张">‹</button>
+    <figure class="lightbox-figure">
+      <img id="lightboxImage" alt="">
+      <figcaption><strong id="lightboxCaption"></strong><span id="lightboxCounter"></span></figcaption>
+    </figure>
+    <button class="lightbox-arrow lightbox-next" id="nextPhoto" type="button" aria-label="下一张">›</button>
+  </div>
+
+  <script src="app.js?v=20260904"></script>
+  <script src="photowall.js?v=20260904-1"></script>
+</body>
+</html>
