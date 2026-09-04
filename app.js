@@ -1,7 +1,7 @@
 const STORAGE_KEY = "neon-drop-records-v2";
 const SETTINGS_KEY = "neon-drop-github-settings-v1";
 const THEME_KEY = "blog-theme";
-const START_DATE = new Date("2026-03-23T00:00:00+08:00").getTime();
+const START_DATE = new Date("2026-09-02T10:03:11+08:00").getTime();
 const $ = (id) => document.getElementById(id);
 const root = document.documentElement;
 const body = document.body;
