@@ -1,24 +1,86 @@
 /* Mobile-only layout corrections for the redesigned homepage. */
 
-@media (max-width: 720px) {
-  /* Prevent the "正在进行的事情" label and copy from inheriting any
-     vertical writing/column layout from older homepage styles. */
+@media (max-width: 980px) {
+  /* The legacy stylesheet has responsive rules for similarly named cards.
+     Keep the redesigned homepage cards in an explicit vertical flow so
+     the photo rail can never collapse on top of the featured card. */
+  .home-feature-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .home-feature {
+    position: relative !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+  }
+
+  .home-rail {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 20px !important;
+  }
+
+  .photo-feature {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+  }
+
+  .photo-copy {
+    position: absolute !important;
+    right: 21px !important;
+    bottom: 20px !important;
+    left: 21px !important;
+    width: auto !important;
+    max-width: none !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+
+  .rail-split {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .moment-feature,
+  .theme-feature {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
   .home-feature .feature-copy,
   .home-feature .feature-copy p,
   .home-feature .feature-copy h2,
+  .photo-copy,
+  .photo-copy span,
+  .photo-copy h2,
+  .photo-copy p,
   .moment-feature,
   .moment-feature h3,
-  .moment-feature p {
-    writing-mode: horizontal-tb;
-    text-orientation: mixed;
-    word-break: normal;
-    overflow-wrap: break-word;
-    white-space: normal;
+  .moment-feature p,
+  .moment-time {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
   }
 
   .home-feature .feature-copy p,
-  .home-feature .feature-copy h2 {
-    max-width: 100%;
+  .home-feature .feature-copy h2,
+  .moment-feature h3,
+  .moment-feature p {
+    max-width: 100% !important;
   }
 
   .home-feature .feature-copy p {
@@ -28,22 +90,50 @@
   .home-feature .feature-copy h2 {
     line-height: 1.45;
   }
+}
 
-  .moment-feature h3,
-  .moment-feature p {
-    max-width: 100%;
+@media (max-width: 720px) {
+  .home-redesign {
+    width: calc(100% - 20px);
+  }
+
+  .home-feature-grid {
+    gap: 14px !important;
+  }
+
+  .home-feature {
+    min-height: 350px !important;
+    border-radius: 21px;
+  }
+
+  .home-rail {
+    gap: 14px !important;
+  }
+
+  .photo-feature {
+    min-height: 215px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .rail-split {
+    gap: 13px !important;
+  }
+
+  .moment-feature,
+  .theme-feature {
+    min-height: 185px !important;
   }
 }
 
 @media (max-width: 430px) {
   .home-feature .feature-copy {
-    right: 18px;
-    bottom: 18px;
-    left: 18px;
+    right: 18px !important;
+    bottom: 18px !important;
+    left: 18px !important;
   }
 
   .home-feature .feature-copy h2 {
-    font-size: 21px;
+    font-size: 21px !important;
     line-height: 1.5;
   }
 
@@ -55,5 +145,9 @@
   .moment-feature p {
     font-size: 10px;
     line-height: 1.8;
+  }
+
+  .rail-split {
+    grid-template-columns: 1fr !important;
   }
 }
