@@ -1,5 +1,5 @@
 const STORAGE_KEY = "neon-drop-records-v2";
-const SETTINGS_KEY = "neon-drop-github-settings-v1";
+const SETTINGS_KEY = "neon-drop-github-settings-v2";
 const THEME_KEY = "blog-theme";
 const START_DATE = new Date("2026-09-02T10:03:11+08:00").getTime();
 const $ = (id) => document.getElementById(id);
@@ -9,7 +9,7 @@ const assetPrefix = body?.dataset.assetPrefix || "";
 const asset = (file) => `${assetPrefix}${file}`;
 const state = {
   records: [],
-  settings: { owner: "", repo: "", branch: "main", path: "data/apex-records.json", token: "" },
+  settings: { owner: "Erethka", repo: "apex-loot-data", branch: "main", path: "data/apex-records.json", token: "" },
   remoteSha: null,
   backgroundIndex: 0,
   backgroundTimer: null,
