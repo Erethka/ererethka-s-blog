@@ -1,0 +1,168 @@
+/* Visual polish layer: keeps the existing XHBlogs-inspired structure while making the homepage quieter, more editorial, and less dashboard-like. */
+
+:root {
+  --polish-max: 1152px;
+}
+
+/* Let the artwork remain visible instead of burying it under a uniform wash. */
+.ambient-wash {
+  background:
+    linear-gradient(180deg, rgba(7, 10, 24, .52) 0%, rgba(8, 12, 29, .66) 48%, rgba(7, 9, 21, .82) 100%),
+    radial-gradient(circle at 18% 12%, rgba(99, 102, 241, .24), transparent 34%),
+    radial-gradient(circle at 86% 78%, rgba(217, 70, 239, .14), transparent 30%);
+  backdrop-filter: blur(7px) saturate(112%);
+  -webkit-backdrop-filter: blur(7px) saturate(112%);
+}
+
+html[data-theme="light"] .ambient-wash {
+  background:
+    linear-gradient(180deg, rgba(247, 249, 255, .34) 0%, rgba(242, 245, 253, .5) 52%, rgba(239, 242, 249, .72) 100%),
+    radial-gradient(circle at 18% 12%, rgba(129, 140, 248, .18), transparent 34%),
+    radial-gradient(circle at 86% 78%, rgba(240, 165, 217, .16), transparent 30%);
+  backdrop-filter: blur(6px) saturate(108%);
+  -webkit-backdrop-filter: blur(6px) saturate(108%);
+}
+
+.ambient-slide.active { opacity: .72; }
+html[data-theme="light"] .ambient-slide.active { opacity: .52; }
+
+/* Navigation should float above the content rather than feel like another card. */
+.site-nav {
+  border-bottom: 0;
+  background: linear-gradient(180deg, rgba(5, 8, 20, .7), rgba(5, 8, 20, .08));
+  box-shadow: none;
+}
+html[data-theme="light"] .site-nav {
+  background: linear-gradient(180deg, rgba(247, 249, 255, .76), rgba(247, 249, 255, .08));
+}
+
+.nav-inner { height: 78px; }
+.brand-copy strong { letter-spacing: .045em; }
+.desktop-links a { opacity: .82; }
+.desktop-links a:hover, .desktop-links a.active { opacity: 1; }
+
+/* Give the search field a lighter, centered role. */
+.reference-search { margin-bottom: 30px; }
+.reference-search-box {
+  min-height: 54px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .38);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, .12);
+}
+html:not([data-theme="light"]) .reference-search-box {
+  background: rgba(17, 24, 46, .42);
+  border-color: rgba(255, 255, 255, .14);
+}
+
+/* Hero becomes the visual anchor. */
+.reference-profile,
+.reference-player { min-height: 300px; }
+.reference-profile { padding: 34px; }
+.reference-profile-top { align-items: flex-start; }
+.reference-avatar {
+  width: 108px;
+  height: 108px;
+  flex-basis: 108px;
+  border-radius: 26px;
+  box-shadow: 0 18px 38px rgba(99, 102, 241, .34);
+}
+.reference-profile-copy h1 { font-size: clamp(32px, 4vw, 48px); }
+.reference-profile-copy p { max-width: 560px; font-size: 13px; line-height: 2; }
+.reference-profile-bottom { padding-top: 5px; }
+
+/* Music card is deliberately quieter than the profile. */
+.reference-player { padding: 28px; background: rgba(255, 255, 255, .34); }
+html:not([data-theme="light"]) .reference-player { background: rgba(20, 27, 50, .43); }
+.reference-disc { width: 78px; height: 78px; flex-basis: 78px; }
+.reference-player-main { gap: 15px; }
+
+/* Featured content gets the strongest contrast after the hero. */
+.reference-content-row { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-top: 28px; }
+.reference-latest { min-height: 455px; border-radius: 28px; }
+.reference-latest-copy { right: 30px; bottom: 28px; left: 30px; }
+.reference-latest-copy h2 { font-size: clamp(28px, 3vw, 38px); letter-spacing: -.045em; }
+.reference-latest-copy p { max-width: 500px; }
+.reference-latest > img { filter: saturate(1.08) contrast(1.02); }
+.reference-image-overlay {
+  background: linear-gradient(180deg, rgba(6, 9, 24, .02) 20%, rgba(6, 8, 22, .18) 45%, rgba(5, 7, 19, .92) 100%);
+}
+
+/* Side cards have lower visual weight. */
+.reference-side { gap: 18px; }
+.reference-photo { min-height: 220px; border-radius: 24px; }
+.reference-photo img { transition: transform .8s ease; }
+.reference-photo:hover img { transform: scale(1.045); }
+.reference-side-bottom { gap: 18px; }
+.reference-chatter, .reference-theme { min-height: 178px; }
+.reference-chatter h3 { font-size: 18px; }
+
+/* Status is a single quiet information rail. */
+.reference-dashboard {
+  min-height: 86px;
+  margin-top: 28px;
+  padding: 18px 24px;
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+}
+.reference-clock { padding-right: 24px; border-right: 1px solid var(--line); }
+.reference-clock span { font-size: 17px; }
+.reference-clock small { font-size: 8px; }
+.reference-dashboard-copy { gap: 12px; }
+.reference-dashboard-copy h2 { font-size: 14px; }
+.reference-dashboard-copy p { font-size: 10px; }
+.reference-badges { margin: 0; justify-content: flex-end; }
+.reference-badges span { padding: 5px 7px; font-size: 7px; }
+
+.reference-about {
+  margin-top: 18px;
+  padding: 25px 28px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 22px;
+  align-items: baseline;
+}
+.reference-about .reference-eyebrow { grid-row: 1 / span 2; margin: 0; }
+.reference-about h2 { margin: 0 0 6px; font-size: 18px; }
+.reference-about p { margin: 0; max-width: 760px; color: var(--muted); font-size: 11px; line-height: 1.8; }
+
+.site-footer { padding-top: 22px; font-size: 9px; opacity: .72; }
+
+/* Hide the persistent sync label from the visual hierarchy while retaining the control in DOM. */
+.sync-pill { display: none; }
+
+@media (max-width: 900px) {
+  .reference-profile-row { grid-template-columns: 1fr; }
+  .reference-content-row { grid-template-columns: 1fr; }
+  .reference-latest { min-height: 390px; }
+  .reference-dashboard { grid-template-columns: 1fr 1fr; }
+  .reference-badges { display: none; }
+}
+
+@media (max-width: 720px) {
+  .reference-container { width: min(100% - 22px, 620px); padding-top: 92px; }
+  .nav-inner { height: 68px; }
+  .reference-profile { min-height: 0; padding: 24px; }
+  .reference-profile-top { gap: 17px; }
+  .reference-avatar { width: 82px; height: 82px; flex-basis: 82px; border-radius: 20px; }
+  .reference-profile-copy h1 { font-size: 31px; }
+  .reference-profile-copy p { font-size: 12px; line-height: 1.75; }
+  .reference-stats { gap: 15px; }
+  .reference-stats > div + div { padding-left: 15px; }
+  .reference-player { min-height: 235px; padding: 23px; }
+  .reference-lyric { min-height: 64px; padding: 14px 17px; }
+  .reference-lyric p { font-size: 12px; }
+  .reference-latest { min-height: 340px; }
+  .reference-latest-copy { right: 21px; bottom: 20px; left: 21px; }
+  .reference-latest-copy h2 { font-size: 27px; }
+  .reference-dashboard { grid-template-columns: 1fr; gap: 10px; padding: 18px; }
+  .reference-clock { padding: 0 0 10px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .reference-about { display: block; padding: 22px; }
+  .reference-about .reference-eyebrow { margin-bottom: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-slide, .reference-avatar, .reference-latest > img, .reference-photo img { transition: none; }
+}
