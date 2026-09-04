@@ -1,0 +1,20 @@
+/* Reference XHBlogs background library override. The source site defines three rotating bgImages. */
+:root {
+  --reference-bg-1: url("https://bu.dusays.com/2026/03/24/69c1e38b4c370.jpg");
+  --reference-bg-2: url("https://bu.dusays.com/2026/03/24/69c26fe4acdb5.jpg");
+  --reference-bg-3: url("https://bu.dusays.com/2026/03/24/69c26fe4d9486.jpg");
+}
+
+.hero-art-image { background-image: var(--reference-bg-1) !important; }
+.home-feature { background: var(--reference-bg-2) center/cover no-repeat !important; }
+.home-feature > img { opacity: 0 !important; }
+.photo-feature { background: var(--reference-bg-3) center/cover no-repeat !important; }
+.photo-feature > img { opacity: 0 !important; }
+.photo-mosaic figure:nth-child(1) { background: var(--reference-bg-1) center/cover no-repeat; }
+.photo-mosaic figure:nth-child(2) { background: var(--reference-bg-2) center/cover no-repeat; }
+.photo-mosaic figure:nth-child(3) { background: var(--reference-bg-3) center/cover no-repeat; }
+.photo-mosaic figure > img { opacity: 0 !important; }
+
+/* Keep the remote reference artwork readable behind the existing glass treatment. */
+.ambient-slide.active { opacity: .78 !important; }
+html[data-theme="light"] .ambient-slide.active { opacity: .60 !important; }
