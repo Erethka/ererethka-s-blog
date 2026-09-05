@@ -1,38 +1,17 @@
 (() => {
   const API_BASE = "https://ererethka-apex-auth.erethka.workers.dev";
-  const SETTINGS_KEY = "neon-drop-github-settings-v2";
-  const PROXY_TOKEN = "__server_proxy__";
   const state = { authenticated: false, modal: null, message: "" };
 
   function api(path) { return `${API_BASE.replace(/\/$/, "")}${path}`; }
-  function setProxySettings() {
-    let current = {};
-    try { current = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"); } catch { /* ignore */ }
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-      owner: "Erethka", repo: "apex-loot-data", branch: "main", path: "data/apex-records.json", token: PROXY_TOKEN,
-      ...current, token: PROXY_TOKEN,
-    }));
-  }
+
+  // Apex 页面只通过 Worker 访问私有数据；浏览器不保存、不发送 GitHub Token。
+  window.apexAuthFetch = (path, init = {}) => originalFetch(api(path), {
+    ...init,
+    credentials: "include",
+    cache: "no-store",
+  });
 
   const originalFetch = window.fetch.bind(window);
-  window.fetch = async (input, init = {}) => {
-    const requestUrl = typeof input === "string" ? input : input?.url || "";
-    const method = (init.method || (typeof input !== "string" ? input?.method : "GET") || "GET").toUpperCase();
-    const isDataRequest = requestUrl.startsWith("https://api.github.com/repos/Erethka/apex-loot-data/contents/data/apex-records.json");
-    const isRepoRequest = requestUrl.startsWith("https://api.github.com/repos/Erethka/apex-loot-data?");
-    if (!isDataRequest && !isRepoRequest) return originalFetch(input, init);
-
-    const endpoint = isRepoRequest ? "/session" : "/apex";
-    const response = await originalFetch(api(endpoint), {
-      method: isRepoRequest ? "GET" : method,
-      headers: { "Content-Type": "application/json", ...(init.headers || {}) },
-      body: isRepoRequest ? undefined : init.body,
-      credentials: "include",
-      cache: "no-store",
-    });
-    if (response.status === 401) showLogin();
-    return response;
-  };
 
   function showLogin(message = "") {
     state.message = message;
@@ -95,7 +74,6 @@
   }
 
   async function bootstrap() {
-    setProxySettings();
     try {
       const response = await originalFetch(api("/session"), { credentials: "include", cache: "no-store" });
       const data = await response.json().catch(() => ({}));
@@ -103,7 +81,7 @@
         state.authenticated = true;
         return;
       }
-    } catch { /* backend may not be deployed yet */ }
+    } catch { /* Worker 不可用时由登录界面提示 */ }
     showLogin();
   }
 
