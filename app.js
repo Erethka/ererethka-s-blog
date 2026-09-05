@@ -1,5 +1,4 @@
 const STORAGE_KEY = "neon-drop-records-v2";
-const SETTINGS_KEY = "neon-drop-github-settings-v2";
 const THEME_KEY = "blog-theme";
 const START_DATE = new Date("2026-09-02T10:03:11+08:00").getTime();
 const $ = (id) => document.getElementById(id);
@@ -9,7 +8,6 @@ const assetPrefix = body?.dataset.assetPrefix || "";
 const asset = (file) => `${assetPrefix}${file}`;
 const state = {
   records: [],
-  settings: { owner: "Erethka", repo: "apex-loot-data", branch: "main", path: "data/apex-records.json", token: "" },
   remoteSha: null,
   backgroundIndex: 0,
   backgroundTimer: null,
@@ -183,11 +181,9 @@ function readLocal() {
     const list = Array.isArray(raw) ? raw : raw?.records;
     state.records = Array.isArray(list) ? list.map(normalizeRecord) : [];
   } catch { state.records = []; }
-  try { state.settings = { ...state.settings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") }; } catch { /* ignore malformed settings */ }
 }
 
 function writeLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.records)); }
-function writeSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); }
 function orderedRecords() { return [...state.records].sort((a, b) => new Date(a.date) - new Date(b.date) || (a.createdAt || 0) - (b.createdAt || 0)); }
 
 function cycleStats() {
@@ -234,23 +230,19 @@ function renderRecords() {
 
 function renderApex() { updateApexStats(); renderRecords(); }
 
-function githubReady() { return Boolean(state.settings.owner && state.settings.repo && state.settings.token); }
-function apiUrl() { const settings = state.settings; return `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/${encodeURIComponent(settings.repo)}/contents/${settings.path.split("/").map(encodeURIComponent).join("/")}`; }
-function repoUrl() { return `https://api.github.com/repos/${encodeURIComponent(state.settings.owner)}/${encodeURIComponent(state.settings.repo)}`; }
-function authHeaders() { return { Accept: "application/vnd.github+json", Authorization: `Bearer ${state.settings.token}`, "X-GitHub-Api-Version": "2022-11-28" }; }
+function apexFetch(path, init = {}) {
+  if (typeof window.apexAuthFetch !== "function") throw new Error("Apex 安全代理未加载");
+  return window.apexAuthFetch(path, init);
+}
+
 function b64Encode(text) { const bytes = new TextEncoder().encode(text); let binary = ""; for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000)); return btoa(binary); }
 function b64Decode(value) { const binary = atob(value.replace(/\n/g, "")); return new TextDecoder().decode(Uint8Array.from(binary, (char) => char.charCodeAt(0))); }
 function payload() { return JSON.stringify({ version: 2, rule: "500 packs guarantees one heirloom; heirloom resets current cycle", updatedAt: new Date().toISOString(), records: state.records }, null, 2); }
 
 async function getRemote() {
-  const response = await fetch(`${apiUrl()}?ref=${encodeURIComponent(state.settings.branch || "main")}&t=${Date.now()}`, { headers: authHeaders(), cache: "no-store" });
-  if (response.status === 404) {
-    const repoCheck = await fetch(`${repoUrl()}?t=${Date.now()}`, { headers: authHeaders(), cache: "no-store" });
-    if (repoCheck.status === 404) throw new Error("无法访问该仓库：请检查用户名、仓库名和 Token 权限");
-    if (!repoCheck.ok) throw new Error(`GitHub 仓库验证失败（${repoCheck.status}）`);
-    return { sha: null, records: [] };
-  }
-  if (!response.ok) throw new Error(`GitHub 读取失败（${response.status}）`);
+  const response = await apexFetch("/apex", { method: "GET" });
+  if (response.status === 401) throw new Error("未登录或登录已过期，请重新验证");
+  if (!response.ok) throw new Error(`私有数据读取失败（${response.status}）`);
   const data = await response.json();
   let parsed = {};
   try { parsed = JSON.parse(b64Decode(data.content || "")); } catch { /* malformed remote file becomes empty */ }
@@ -265,84 +257,56 @@ function setSync(label, mode = "") {
   $("syncLabel") && ($("syncLabel").textContent = label);
 }
 
-function updateSyncPill(connected = false) { setSync(connected || githubReady() ? "GitHub connected" : "Local draft", connected || githubReady() ? "connected" : ""); }
+function updateSyncPill(connected = false) { setSync(connected ? "Private sync connected" : "等待身份验证", connected ? "connected" : ""); }
 
 async function saveGithub(show = true) {
-  if (!githubReady()) { if (show) toast("请先在设置中连接 GitHub"); return false; }
-  const remote = await getRemote();
-  const body = { message: "chore: update Apex heirloom loot log", content: b64Encode(payload()), branch: state.settings.branch || "main" };
-  if (remote.sha) body.sha = remote.sha;
-  const response = await fetch(apiUrl(), { method: "PUT", headers: { ...authHeaders(), "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  if (!response.ok) throw new Error(`GitHub 保存失败（${response.status}）`);
-  state.remoteSha = (await response.json()).content?.sha || remote.sha;
-  updateSyncPill(true);
-  if (show) toast("已保存到 GitHub 私库");
-  return true;
+  try {
+    const remote = await getRemote();
+    const body = { message: "chore: update Apex heirloom loot log", content: b64Encode(payload()), branch: "main" };
+    if (remote.sha) body.sha = remote.sha;
+    const response = await apexFetch("/apex", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (response.status === 401) throw new Error("登录已过期，请重新验证");
+    if (!response.ok) throw new Error(`私有数据保存失败（${response.status}）`);
+    state.remoteSha = (await response.json()).content?.sha || remote.sha;
+    updateSyncPill(true);
+    if (show) toast("已保存到 GitHub 私库");
+    return true;
+  } catch (error) {
+    updateSyncPill(false);
+    if (show) toast(error.message || "私有数据保存失败");
+    throw error;
+  }
 }
 
 async function loadGithub() {
-  if (!githubReady()) { toast("请先在设置中连接 GitHub"); openSettings(); return; }
   try {
-    setSync("Syncing…", "working");
+    setSync("正在同步…", "working");
     const remote = await getRemote();
     state.remoteSha = remote.sha;
     if (remote.sha || !state.records.length) {
       state.records = remote.records;
       writeLocal();
       renderApex();
-      toast(`已从 GitHub 拉取 ${remote.records.length} 条记录`);
-    } else {
-      updateSyncPill(true);
-      toast("远端文件为空，已保留本地草稿");
+      toast(`已从私有仓库拉取 ${remote.records.length} 条记录`);
     }
     updateSyncPill(Boolean(remote.sha));
   } catch (error) {
-    updateSyncPill();
-    toast(error.message || "GitHub 拉取失败");
+    updateSyncPill(false);
+    toast(error.message || "私有数据拉取失败");
   }
 }
 
 let saveTimer;
-function scheduleGithubSave() { if (!githubReady()) return; clearTimeout(saveTimer); saveTimer = setTimeout(() => saveGithub(false).catch(() => updateSyncPill()), 900); }
-
-function fillSettings() {
-  const map = { owner: "ghOwner", repo: "ghRepo", branch: "ghBranch", path: "ghPath", token: "ghToken" };
-  Object.entries(map).forEach(([key, id]) => { if ($(id)) $(id).value = state.settings[key] || ""; });
-}
-function openSettings() { const modal = $("settingsModal"); if (!modal) return; fillSettings(); modal.classList.add("open"); modal.setAttribute("aria-hidden", "false"); $("ghOwner")?.focus(); }
-function closeSettings() { const modal = $("settingsModal"); if (!modal) return; modal.classList.remove("open"); modal.setAttribute("aria-hidden", "true"); }
-function collectSettings() {
-  state.settings = { owner: $("ghOwner")?.value.trim() || "", repo: $("ghRepo")?.value.trim() || "", branch: $("ghBranch")?.value.trim() || "main", path: $("ghPath")?.value.trim() || "data/apex-records.json", token: $("ghToken")?.value.trim() || "" };
-  writeSettings();
-  updateSyncPill();
-}
-
-function initSettings() {
-  $("settingsBtn")?.addEventListener("click", openSettings);
-  $("closeSettings")?.addEventListener("click", closeSettings);
-  $("settingsModal")?.addEventListener("click", (event) => { if (event.target === $("settingsModal")) closeSettings(); });
-  $("saveSettingsBtn")?.addEventListener("click", () => { collectSettings(); closeSettings(); toast(githubReady() ? "GitHub 设置已保存" : "本地设置已保存"); });
-  $("testGithubBtn")?.addEventListener("click", async () => {
-    collectSettings();
-    const status = $("modalStatus");
-    if (!githubReady()) { if (status) { status.textContent = "请先填写用户名、仓库和 Token。"; status.style.color = "var(--pink)"; } return; }
-    if (status) { status.textContent = "正在测试连接…"; status.style.color = "var(--muted)"; }
-    try {
-      const response = await fetch(`${repoUrl()}?t=${Date.now()}`, { headers: authHeaders(), cache: "no-store" });
-      if (!response.ok) throw new Error(`GitHub 返回 ${response.status}`);
-      if (status) { status.textContent = "连接成功，自动保存已就绪。"; status.style.color = "#86efac"; }
-    } catch (error) {
-      if (status) { status.textContent = error.message || "连接失败"; status.style.color = "var(--pink)"; }
-    }
-  });
-  $("loadGithubBtn")?.addEventListener("click", loadGithub);
+function scheduleGithubSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveGithub(false).catch(() => {}), 900);
 }
 
 function initApex() {
-  if (!$('recordForm')) return;
+  if (!$("recordForm")) return;
   readLocal();
   renderApex();
-  updateSyncPill();
+  updateSyncPill(false);
   $("date").valueAsDate = new Date();
   $("recordForm").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -354,7 +318,7 @@ function initApex() {
     event.target.reset();
     $("date").valueAsDate = new Date();
     $("packs").value = 1;
-    toast(githubReady() ? "已保存本地，正在同步 GitHub…" : "记录已保存到本地");
+    toast("已保存本地，正在同步私有仓库…");
     $("history-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   $("emptyCta")?.addEventListener("click", () => ($("recordPanel") || $("recordForm"))?.scrollIntoView({ behavior: "smooth", block: "center" }));
@@ -367,7 +331,7 @@ function initApex() {
     scheduleGithubSave();
     toast("记录已删除");
   });
-  if (githubReady()) loadGithub();
+  loadGithub();
 }
 
 readLocal();
@@ -378,7 +342,5 @@ initCopyButtons();
 initMusicPreview();
 initSearch();
 initClock();
-initSettings();
 updateHomePreview();
 initApex();
-updateSyncPill();
