@@ -1,5 +1,5 @@
 (() => {
-  const API_BASE = "https://REPLACE-WITH-YOUR-WORKER.workers.dev";
+  const API_BASE = "https://ererethka-apex-auth.erethka.workers.dev";
   const SETTINGS_KEY = "neon-drop-github-settings-v2";
   const PROXY_TOKEN = "__server_proxy__";
   const state = { authenticated: false, modal: null, message: "" };
