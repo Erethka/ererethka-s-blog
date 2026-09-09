@@ -14,54 +14,25 @@
 </head>
 <body data-route="dev" data-asset-prefix="../">
   <div class="ambient" aria-hidden="true"><div class="ambient-slides" id="backgroundSlides"></div><div class="ambient-wash"></div><div class="ambient-orb orb-left"></div><div class="ambient-orb orb-right"></div><div class="ambient-grain"></div></div>
-
-  <header class="site-nav" id="siteNav">
-    <div class="nav-inner">
-      <a class="brand" href="../index.html#home" data-nav="home" aria-label="返回首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand-copy"><strong>ererethka <em>の</em> 宝藏之地</strong><small>PERSONAL DIGITAL GARDEN</small></span></a>
-      <nav class="desktop-links" aria-label="主导航"><a href="../index.html#home" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">项目</a><a href="./index.html" data-nav="dev">技术记录</a><a href="../index.html#timeline" data-nav="timeline">归档</a><a href="../photowall/index.html" data-nav="photowall">照片墙</a><a href="../index.html#music" data-nav="music">音乐</a><a href="../apex/index.html" data-nav="apex">Apex记录</a><a href="../index.html#about" data-nav="about">关于</a></nav>
-      <div class="nav-actions"><button class="theme-button" id="themeButton" type="button" title="切换日夜主题" aria-label="切换日夜主题"><span id="themeIcon">✦</span><span id="themeLabel">夜间</span></button><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="打开导航" aria-expanded="false">☰</button></div>
-    </div>
-    <nav class="mobile-links" id="mobileLinks" aria-label="移动端导航"><a href="../index.html#home" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">项目</a><a href="./index.html" data-nav="dev">技术记录</a><a href="../index.html#timeline" data-nav="timeline">归档</a><a href="../photowall/index.html" data-nav="photowall">照片墙</a><a href="../index.html#music" data-nav="music">音乐</a><a href="../apex/index.html" data-nav="apex">Apex记录</a><a href="../index.html#about" data-nav="about">关于</a></nav>
-  </header>
-
+  <header class="site-nav" id="siteNav"><div class="nav-inner"><a class="brand" href="../index.html#home" data-nav="home" aria-label="返回首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand-copy"><strong>ererethka <em>の</em> 宝藏之地</strong><small>PERSONAL DIGITAL GARDEN</small></span></a><nav class="desktop-links" aria-label="主导航"><a href="../index.html#home" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">项目</a><a href="./index.html" data-nav="dev">技术记录</a><a href="../index.html#timeline" data-nav="timeline">归档</a><a href="../photowall/index.html" data-nav="photowall">照片墙</a><a href="../index.html#music" data-nav="music">音乐</a><a href="../apex/index.html" data-nav="apex">Apex记录</a><a href="../index.html#about" data-nav="about">关于</a></nav><div class="nav-actions"><button class="theme-button" id="themeButton" type="button" title="切换日夜主题" aria-label="切换日夜主题"><span id="themeIcon">✦</span><span id="themeLabel">夜间</span></button><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="打开导航" aria-expanded="false">☰</button></div></div><nav class="mobile-links" id="mobileLinks" aria-label="移动端导航"><a href="../index.html#home" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">项目</a><a href="./index.html" data-nav="dev">技术记录</a><a href="../index.html#timeline" data-nav="timeline">归档</a><a href="../photowall/index.html" data-nav="photowall">照片墙</a><a href="../index.html#music" data-nav="music">音乐</a><a href="../apex/index.html" data-nav="apex">Apex记录</a><a href="../index.html#about" data-nav="about">关于</a></nav></header>
   <main class="page-container dev-page">
-    <section class="dev-hero">
-      <div><span class="kicker">PRIVATE DEVELOPMENT ARCHIVE</span><h1>技术记录，<em>保持 Markdown 原样。</em></h1><p>这里是自己的开发笔记库。网页只是编辑器与索引，真正的数据以独立 Markdown 文件保存到私有仓库。</p></div>
-      <div class="dev-hero-side"><span>STORAGE</span><strong>APEX PRIVATE REPO</strong><small>Markdown / Git history</small></div>
-    </section>
-
+    <section class="dev-hero"><div><span class="kicker">PRIVATE DEVELOPMENT ARCHIVE</span><h1>技术记录，<em>保持 Markdown 原样。</em></h1><p>这里是自己的开发笔记库。网页只是编辑器与索引，真正的数据以独立 Markdown 文件保存到私有仓库。</p></div><div class="dev-hero-side"><span>STORAGE</span><strong>APEX PRIVATE REPO</strong><small>Markdown / Git history</small></div></section>
     <section class="dev-layout">
       <aside class="glass-card doc-sidebar">
         <div class="sidebar-top"><div><span class="kicker">DOCUMENTS</span><h2>我的记录</h2></div><button id="newDocBtn" class="primary-button compact" type="button">＋ 新建</button></div>
+        <div class="doc-search"><input id="docSearch" type="search" placeholder="搜索标题、标签、路径…" aria-label="搜索技术记录"></div>
         <div class="category-filter" id="categoryFilter"></div>
         <div class="doc-list" id="docList"><div class="doc-loading">正在读取私有文档…</div></div>
       </aside>
-
       <section class="glass-card editor-shell" aria-label="Markdown 编辑器">
-        <div class="editor-toolbar">
-          <div class="editor-title"><span class="kicker">MARKDOWN EDITOR</span><strong id="editorFile">未选择文档</strong><span id="editorState" class="editor-state">只读索引</span></div>
-          <div class="editor-actions"><button id="importBtn" class="outline-button" type="button">导入 .md</button><input id="fileInput" type="file" accept=".md,.markdown,text/markdown,text/plain" hidden><button id="previewToggle" class="outline-button" type="button">预览</button><button id="saveDocBtn" class="primary-button" type="button" disabled>保存 Markdown</button></div>
-        </div>
-
-        <div class="meta-grid" id="metaGrid">
-          <label>标题<input id="docTitle" maxlength="160" placeholder="例如：UE5.7 动作系统记录"></label>
-          <label>类别<select id="docCategory"><option value="Unreal Engine">Unreal Engine</option><option value="C++">C++</option><option value="Blueprint">Blueprint</option><option value="Gameplay">Gameplay</option><option value="Tools">Tools</option><option value="Rendering">Rendering</option><option value="AI">AI</option><option value="其他">其他</option></select></label>
-          <label>标签<input id="docTags" placeholder="UE5, GAS, Animation"></label>
-          <label>日期<input id="docDate" type="date"></label>
-        </div>
-
-        <div class="editor-grid" id="editorGrid">
-          <div class="markdown-pane"><div class="pane-label">SOURCE · MARKDOWN</div><textarea id="markdownInput" spellcheck="false" placeholder="# 开始记录\n\n这里直接写 Markdown。保存时会把 front matter 与正文一起写入私有仓库。"></textarea></div>
-          <article class="markdown-pane preview-pane"><div class="pane-label">PREVIEW · RENDERED</div><div id="markdownPreview" class="markdown-preview"><p class="preview-empty">开始编辑后，这里显示 Markdown 预览。</p></div></article>
-        </div>
+        <div class="editor-toolbar"><div class="editor-title"><span class="kicker">MARKDOWN EDITOR</span><strong id="editorFile">未选择文档</strong><span id="editorState" class="editor-state">只读索引</span></div><div class="editor-actions"><button id="importBtn" class="outline-button" type="button">导入 .md</button><input id="fileInput" type="file" accept=".md,.markdown,text/markdown,text/plain" hidden><button id="previewToggle" class="outline-button" type="button">预览</button><button id="renameDocBtn" class="outline-button" type="button" disabled>重命名</button><button id="deleteDocBtn" class="outline-button danger-button" type="button" disabled>删除</button><button id="saveDocBtn" class="primary-button" type="button" disabled>保存 Markdown</button></div></div>
+        <div class="meta-grid" id="metaGrid"><label>标题<input id="docTitle" maxlength="160" placeholder="例如：UE5.7 动作系统记录"></label><label>类别<input id="docCategory" list="categoryOptions" maxlength="80" placeholder="例如：Unreal Engine"><datalist id="categoryOptions"></datalist></label><label>标签<input id="docTags" placeholder="UE5, GAS, Animation"></label><label>日期<input id="docDate" type="date"></label><label>状态<select id="docStatus"><option value="draft">草稿</option><option value="published">正式</option><option value="archived">归档</option></select></label></div>
+        <div class="editor-grid" id="editorGrid"><div class="markdown-pane"><div class="pane-label">SOURCE · MARKDOWN</div><textarea id="markdownInput" spellcheck="false" placeholder="# 开始记录\n\n这里直接写 Markdown。保存时会把 front matter 与正文一起写入私有仓库。"></textarea></div><article class="markdown-pane preview-pane"><div class="pane-label">PREVIEW · RENDERED</div><div id="markdownPreview" class="markdown-preview"><p class="preview-empty">开始编辑后，这里显示 Markdown 预览。</p></div></article></div>
         <div class="editor-foot"><span id="saveHint">新建或导入一个 Markdown 文档后即可保存。</span><span id="wordCount">0 words</span></div>
       </section>
     </section>
   </main>
-
   <div class="toast" id="toast" role="status"></div>
-  <script src="../apex-auth.js?v=20260909"></script>
-  <script src="../app.js?v=20260909"></script>
-  <script src="./dev.js?v=20260909"></script>
+  <script src="../apex-auth.js?v=20260909"></script><script src="../app.js?v=20260909"></script><script src="./dev.js?v=20260909"></script>
 </body>
 </html>
