@@ -196,7 +196,7 @@ async function putApex(request, env) {
 function validDocumentPath(path) {
   return (
     typeof path === "string" &&
-    /^docs\/[A-Za-z0-9._~\-/]+\.md$/i.test(path) &&
+    /^docs\/[\p{L}\p{N}._~\-/]+\.md$/iu.test(path) &&
     !path.includes("..") &&
     !path.includes("\\")
   );
