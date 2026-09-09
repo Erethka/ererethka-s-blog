@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Erethka 技术知识库">
+  <title>技术记录 · Erethka</title>
+  <link rel="stylesheet" href="../styles.css?v=20260909">
+  <link rel="stylesheet" href="./dev.css?v=20260909">
+  <link rel="stylesheet" href="./reader.css?v=20260909">
+</head>
+<body>
+  <div id="siteNav"></div>
+  <main class="reader-page">
+    <div class="reader-toolbar">
+      <a class="reader-back" href="./index.html">← 技术知识库</a>
+      <a id="editLink" class="reader-edit" href="./index.html">编辑文档</a>
+    </div>
+    <section id="readerState" class="reader-state">正在加载文档…</section>
+    <div id="readerLayout" class="reader-layout" hidden>
+      <aside class="reader-sidebar">
+        <div class="reader-side-card">
+          <div class="reader-side-label">目录</div>
+          <nav id="toc" class="reader-toc"></nav>
+        </div>
+        <div class="reader-side-card">
+          <div class="reader-side-label">标签</div>
+          <div id="tagIndex" class="reader-tags"></div>
+        </div>
+      </aside>
+      <article class="reader-article">
+        <header class="reader-header">
+          <div id="docMeta" class="reader-meta"></div>
+          <h1 id="docTitle">技术记录</h1>
+          <div id="docTags" class="reader-tags"></div>
+        </header>
+        <div id="articleBody" class="markdown-body"></div>
+        <footer class="reader-footer">
+          <a id="prevDoc" class="reader-nav-card" href="#"><span>上一篇</span><strong>—</strong></a>
+          <a id="nextDoc" class="reader-nav-card reader-nav-next" href="#"><span>下一篇</span><strong>—</strong></a>
+        </footer>
+      </article>
+    </div>
+  </main>
+  <script src="../apex-auth.js?v=20260909"></script>
+  <script src="../app.js?v=20260909"></script>
+  <script src="./reader.js?v=20260909"></script>
+</body>
+</html>
