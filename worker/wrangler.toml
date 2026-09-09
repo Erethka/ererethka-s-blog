@@ -2,5 +2,6 @@ name = "ererethka-apex-auth"
 main = "src/index.js"
 compatibility_date = "2026-09-04"
 
+# Cloudflare Workers Builds: keep Worker deployment isolated in /worker.
 [vars]
 ALLOWED_ORIGIN = "https://erethka.github.io"
