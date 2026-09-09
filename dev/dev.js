@@ -197,5 +197,6 @@
     window.addEventListener("beforeunload", (e) => { if (state.dirty) { e.preventDefault(); e.returnValue = ""; } });
   }
 
+  window.loadGithub = loadDocuments;
   document.addEventListener("DOMContentLoaded", () => { bind(); loadDocuments(); });
 })();
