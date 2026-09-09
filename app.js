@@ -1,11 +1,10 @@
-const STORAGE_KEY = "neon-drop-records-v2";
+const STORAGE_KEY = "neon-drop-records-v3";
 const THEME_KEY = "blog-theme";
 const START_DATE = new Date("2026-09-02T10:03:11+08:00").getTime();
 const $ = (id) => document.getElementById(id);
 const root = document.documentElement;
 const body = document.body;
-const assetPrefix = body?.dataset.assetPrefix || "";
-const asset = (file) => `${assetPrefix}${file}`;
+
 const state = {
   records: [],
   remoteSha: null,
@@ -14,10 +13,13 @@ const state = {
   musicPlaying: false,
 };
 
-const WALLPAPERS = {
-  dark: ["assets/backgrounds/dark/a2-wlop.jpg", "assets/backgrounds/dark/solo-leveling.jpg", "assets/backgrounds/dark/solo-leveling-igris.jpg", "assets/backgrounds/dark/kaisel.jpg"],
-  light: ["assets/backgrounds/light/snowy-profile.jpg", "assets/backgrounds/light/hu-tao.jpg", "assets/backgrounds/light/anime-spring.jpg", "assets/backgrounds/light/station-girl.jpg"],
-};
+// These are the three reference-site background images. They are the only
+// rotating page backgrounds; local artwork is kept for content cards only.
+const REFERENCE_BACKGROUNDS = [
+  "https://bu.dusays.com/2026/03/24/69c1e38b4c370.jpg",
+  "https://bu.dusays.com/2026/03/24/69c26fe4acdb5.jpg",
+  "https://bu.dusays.com/2026/03/24/69c26fe4d9486.jpg",
+];
 
 function toast(message) {
   const el = $("toast");
@@ -38,16 +40,17 @@ function setTheme(theme, notify = false) {
   if ($("themeCardTitle")) $("themeCardTitle").textContent = dark ? "日间模式" : "夜间模式";
   if ($("themeCardCopy")) $("themeCardCopy").textContent = dark ? "落樱漫舞的清晨" : "流萤飞舞的深空";
   if ($("themeOrb")) $("themeOrb").textContent = dark ? "✿" : "✦";
-  renderBackgrounds(mode);
+  renderBackgrounds();
   if (notify) toast(dark ? "已切换到夜间模式" : "已切换到日间模式");
 }
 
-function renderBackgrounds(theme = root.dataset.theme || "dark") {
+function renderBackgrounds() {
   const holder = $("backgroundSlides");
   if (!holder) return;
-  const choices = WALLPAPERS[theme] || WALLPAPERS.dark;
   clearInterval(state.backgroundTimer);
-  holder.innerHTML = choices.map((file, index) => `<div class="ambient-slide${index === state.backgroundIndex % choices.length ? " active" : ""}" style="background-image:url('${asset(file)}')"></div>`).join("");
+  holder.innerHTML = REFERENCE_BACKGROUNDS.map((src, index) =>
+    `<div class="ambient-slide${index === state.backgroundIndex % REFERENCE_BACKGROUNDS.length ? " active" : ""}" style="background-image:url('${src}')"></div>`
+  ).join("");
   const slides = [...holder.children];
   state.backgroundTimer = setInterval(() => {
     if (slides.length < 2) return;
@@ -83,6 +86,7 @@ function initMobileNav() {
 
 function currentNav() {
   if (body?.dataset.route === "apex") return "apex";
+  if (body?.dataset.route === "dev") return "dev";
   const hash = location.hash.replace(/^#/, "");
   return ["projects", "timeline", "photowall", "music", "about"].includes(hash) ? hash : "home";
 }
@@ -169,8 +173,6 @@ function normalizeRecord(record) {
     id: record?.id || uid(),
     date: record?.date || new Date().toISOString().slice(0, 10),
     packs: Math.max(1, Number(record?.packs) || 1),
-    heirloom: Boolean(record?.heirloom || record?.rarity === "heirloom"),
-    heirloomName: record?.heirloomName || (record?.rarity === "heirloom" ? record?.highlight : "") || "",
     createdAt: record?.createdAt || Date.now(),
   };
 }
@@ -187,15 +189,9 @@ function writeLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.r
 function orderedRecords() { return [...state.records].sort((a, b) => new Date(a.date) - new Date(b.date) || (a.createdAt || 0) - (b.createdAt || 0)); }
 
 function cycleStats() {
-  let progress = 0, heirlooms = 0, last = null;
-  for (const record of orderedRecords()) {
-    const combined = progress + record.packs;
-    const guaranteed = Math.floor(combined / 500);
-    if (guaranteed > 0) { heirlooms += guaranteed; last = { date: record.date, heirloomName: record.heirloomName || "Guaranteed heirloom" }; }
-    progress = combined % 500;
-    if (record.heirloom) { if (guaranteed === 0) heirlooms += 1; progress = 0; last = record; }
-  }
-  return { total: state.records.reduce((sum, record) => sum + record.packs, 0), progress, heirlooms, toPity: Math.max(0, 500 - progress), last };
+  const total = state.records.reduce((sum, record) => sum + record.packs, 0);
+  const progress = total % 500;
+  return { total, progress, toPity: progress === 0 && total > 0 ? 500 : 500 - progress };
 }
 
 function updateHomePreview() {
@@ -208,14 +204,12 @@ function updateApexStats() {
   const stats = cycleStats();
   if ($("totalPacks")) $("totalPacks").textContent = stats.total.toLocaleString("en-US");
   if ($("pityProgress")) $("pityProgress").textContent = `${stats.progress} / 500`;
-  if ($("heirloomCount")) $("heirloomCount").textContent = String(stats.heirlooms);
   if ($("packsToPity")) $("packsToPity").textContent = String(stats.toPity);
   if ($("cycleText")) $("cycleText").textContent = `${stats.progress} / 500 packs`;
-  if ($("lastHeirloom")) $("lastHeirloom").textContent = stats.last ? (stats.last.heirloomName || dateText(stats.last.date)) : "尚未记录";
   if ($("vibeFace")) {
     $("vibeFace").textContent = !stats.total ? "^_^" : stats.progress < 350 ? "o_o" : "^w^";
-    $("vibeTitle").textContent = !stats.total ? "新的循环，新的希望" : stats.progress < 350 ? "红光正在加载" : "保底开始升温";
-    $("vibeCopy").textContent = !stats.total ? "每累计一包，就距离下一次保底更近一步。" : `${stats.toPity} 包后进入下一次 500 包保底循环。`;
+    $("vibeTitle").textContent = !stats.total ? "新的循环，新的希望" : stats.progress < 350 ? "距离红光还早" : "保底开始升温";
+    $("vibeCopy").textContent = !stats.total ? "每记录一包，就距离下一次 500 包保底更近一步。" : `${stats.toPity} 包后进入下一次 500 包保底循环。`;
   }
 }
 
@@ -225,7 +219,7 @@ function renderRecords() {
   if (!holder || !empty) return;
   const records = [...state.records].sort((a, b) => new Date(b.date) - new Date(a.date) || (b.createdAt || 0) - (a.createdAt || 0));
   empty.style.display = records.length ? "none" : "block";
-  holder.innerHTML = records.map((record) => `<article class="record-card ${record.heirloom ? "record-card-red" : "record-card-normal"}"><div class="record-badge">${record.heirloom ? "✦" : "◇"}</div><div class="record-main"><h3>${record.heirloom ? "Heirloom found" : "Pack cycle logged"}${record.heirloomName ? ` / ${escapeHtml(record.heirloomName)}` : ""}</h3><p>${dateText(record.date)} / <span>${record.packs} packs</span>${record.heirloom ? " / <b>cycle reset</b>" : ""}</p></div><div class="record-side"><strong>${record.heirloom ? "RED GLOW" : `+${record.packs}`}</strong><small>${record.heirloom ? "HEIRLOOM" : "PACKS"}</small></div><button class="record-delete" type="button" data-delete="${escapeHtml(record.id)}" aria-label="删除记录">×</button></article>`).join("");
+  holder.innerHTML = records.map((record) => `<article class="record-card record-card-normal"><div class="record-badge">◇</div><div class="record-main"><h3>Pack cycle logged</h3><p>${dateText(record.date)} / <span>${record.packs} packs</span></p></div><div class="record-side"><strong>+${record.packs}</strong><small>PACKS</small></div><button class="record-delete" type="button" data-delete="${escapeHtml(record.id)}" aria-label="删除记录">×</button></article>`).join("");
 }
 
 function renderApex() { updateApexStats(); renderRecords(); }
@@ -237,7 +231,7 @@ function apexFetch(path, init = {}) {
 
 function b64Encode(text) { const bytes = new TextEncoder().encode(text); let binary = ""; for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000)); return btoa(binary); }
 function b64Decode(value) { const binary = atob(value.replace(/\n/g, "")); return new TextDecoder().decode(Uint8Array.from(binary, (char) => char.charCodeAt(0))); }
-function payload() { return JSON.stringify({ version: 2, rule: "500 packs guarantees one heirloom; heirloom resets current cycle", updatedAt: new Date().toISOString(), records: state.records }, null, 2); }
+function payload() { return JSON.stringify({ version: 3, rule: "Record opened pack counts; current pity progress is total packs modulo 500", updatedAt: new Date().toISOString(), records: state.records }, null, 2); }
 
 async function getRemote() {
   const response = await apexFetch("/apex", { method: "GET" });
@@ -262,7 +256,7 @@ function updateSyncPill(connected = false) { setSync(connected ? "Private sync c
 async function saveGithub(show = true) {
   try {
     const remote = await getRemote();
-    const body = { message: "chore: update Apex heirloom loot log", content: b64Encode(payload()), branch: "main" };
+    const body = { message: "chore: update Apex pack count log", content: b64Encode(payload()), branch: "main" };
     if (remote.sha) body.sha = remote.sha;
     const response = await apexFetch("/apex", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     if (response.status === 401) throw new Error("登录已过期，请重新验证");
@@ -310,7 +304,7 @@ function initApex() {
   $("date").valueAsDate = new Date();
   $("recordForm").addEventListener("submit", (event) => {
     event.preventDefault();
-    const record = normalizeRecord({ id: uid(), date: $("date").value, packs: Number($("packs").value), heirloom: $("heirloom").checked, heirloomName: $("heirloomName").value.trim(), createdAt: Date.now() });
+    const record = normalizeRecord({ id: uid(), date: $("date").value, packs: Number($("packs").value), createdAt: Date.now() });
     state.records.push(record);
     writeLocal();
     renderApex();
