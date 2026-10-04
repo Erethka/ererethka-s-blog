@@ -100,6 +100,25 @@ CATEGORY_RULES: dict[str, list[tuple[str, int]]] = {
 
 DEFAULT_CATEGORY = "其他"
 
+# 这些词一旦出现，说明文档确实在讲 Unreal Engine，而不是仅仅涉及通用编程。
+# 用词边界匹配，避免 "value"/"issue" 被 "ue" 误伤。
+UE_CONTEXT_SIGNALS = [
+    "ue5", "ue4", "ue5.", "unreal", "unrealengine", "蓝图", "blueprint",
+    "uclass", "uproperty", "uobject", "ufunction", "ustruct", "uenum",
+    "uasset", "uproject", "gameplayability", "gameplayeffect",
+    "abilitysystemcomponent", "attributeset", "staticmesh", "datatable",
+    "curvetable", "widget", "umg", "actor", "pawn", "nanite", "lumen",
+    "chaos", "sequencer", "pivot", "枢纽点", "引擎根目录", "consolevariables",
+    "r.warnofbaddrviers", "r.warnofbadddrivers", "astc", "pico", "stringtable", "gas",
+]
+
+UE_CATEGORY = "Unreal Engine"
+
+# UE 版本号的声明式写法，如 UE5.3.2 / UE 5.4 / ue4.27。
+# 词边界在这里不适用：版本号前一个字符往往是中文（「在UE5.3.2版本中」），
+# 而 \b 只在「单词字符与非单词字符之间」成立，中文两侧都会失败。
+UE_VERSION_RE = re.compile(r"ue\s?\d+(?:\.\d+)+", re.I)
+
 # 停用词，避免标题里的通用词造成误判
 STOPWORDS = {"记录", "笔记", "总结", "问题", "文档", "教程", "分享"}
 
@@ -143,13 +162,31 @@ def _keyword_hit(keyword: str, text: str) -> int:
     return text.count(keyword)
 
 
+def detect_ue_context(title: str, body: str = "", folder_path: str = "") -> list[str]:
+    """找出文档里出现过的 Unreal Engine 特征词。"""
+    text = _normalize(f"{title} {folder_path} {_strip_urls(body)[:4000]}")
+    signals = [signal for signal in UE_CONTEXT_SIGNALS if _keyword_hit(signal, text)]
+
+    for match in UE_VERSION_RE.finditer(text):
+        literal = match.group(0)
+        if literal not in signals:
+            signals.append(literal)
+
+    return signals
+
+
 def classify(title: str, body: str = "", folder_path: str = "") -> tuple[str, dict]:
-    """返回 (category, 评分明细)。"""
+    """返回 (category, 评分明细)。
+
+    只要正文里出现 Unreal Engine 特征词，就归入 Unreal Engine，
+    因为整个知识库是 UE 语境的，通用编程分数常常盖过 UE 分数。
+    只有明确指向 Unity 时才不覆盖。
+    """
     clean_body = _strip_urls(body)[:4000]
     haystack = _normalize(f"{title} {folder_path} {clean_body}")
     title_norm = _normalize(title)
     folder_norm = _normalize(folder_path)
-
+    ue_signals = detect_ue_context(title, body, folder_path)
     scores: dict[str, float] = {}
 
     for category, rules in CATEGORY_RULES.items():
@@ -175,6 +212,18 @@ def classify(title: str, body: str = "", folder_path: str = "") -> tuple[str, di
             scores[category] = score
 
     if not scores:
+        if ue_signals:
+            return (
+                UE_CATEGORY,
+                {
+                    "scores": {UE_CATEGORY: 0.0},
+                    "top_score": 0.0,
+                    "confidence": 1.0,
+                    "ambiguous": False,
+                    "ue_override": True,
+                    "ue_signals": ue_signals,
+                },
+            )
         return DEFAULT_CATEGORY, {"scores": {}, "matched": [], "confidence": 0.0}
 
     best = max(scores.values())
@@ -184,13 +233,32 @@ def classify(title: str, body: str = "", folder_path: str = "") -> tuple[str, di
     second = ranked[1][1] if len(ranked) > 1 else 0.0
     confidence = 1.0 if best == 0 else min(1.0, (best - second) / best)
 
+    overridden = False
+    original = top_category
+
+    # UE 上下文覆盖：除非明确是 Unity 项目，否则并入 Unreal Engine
+    if ue_signals and top_category not in (UE_CATEGORY, "Unity"):
+        ranked = [(UE_CATEGORY, best)] + [
+            (name, value) for name, value in ranked if name != UE_CATEGORY
+        ]
+        top_category = UE_CATEGORY
+        overridden = True
+        confidence = 1.0
+
     detail = {
         "scores": {name: round(value, 1) for name, value in ranked},
         "top_score": round(best, 1),
         "confidence": round(confidence, 2),
         # 前两名接近时标记为不确定，交给人工确认
-        "ambiguous": confidence < 0.25 and len(ranked) > 1,
+        "ambiguous": (not overridden) and confidence < 0.25 and len(ranked) > 1,
+        "ue_override": overridden,
     }
+    if overridden:
+        detail["overridden_from"] = original
+        detail["ue_signals"] = ue_signals
+    elif ue_signals:
+        detail["ue_signals"] = ue_signals
+
     return top_category, detail
 
 

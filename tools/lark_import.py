@@ -427,16 +427,19 @@ class BlogWorker:
             )
         return json.loads(payload.decode("utf-8")).get("documents", [])
 
-    def put_document(self, path, content, message, retries=3):
-        """写入文档。网络抖动（TLS 中断、连接重置）时有重试。"""
+    def put_document(self, path, content, message, sha=None, retries=3):
+        """写入文档。更新已存在的文件时必须带 sha，否则 GitHub 报 422。
+
+        网络抖动（TLS 中断、连接重置）时有重试。
+        """
         last_error = None
         for attempt in range(1, retries + 1):
+            payload_body = {"path": path, "content": content, "message": message}
+            if sha:
+                payload_body["sha"] = sha
+
             try:
-                status, _, payload = self._call(
-                    "/documents",
-                    "PUT",
-                    {"path": path, "content": content, "message": message},
-                )
+                status, _, payload = self._call("/documents", "PUT", payload_body)
             except Exception as error:  # noqa: BLE001
                 last_error = error
                 if attempt < retries:
@@ -453,12 +456,36 @@ class BlogWorker:
                 time.sleep(2 * attempt)
                 continue
 
+            # sha 过期（文件被别处改过）时重新取一次再试
+            if status == 409 and attempt < retries:
+                fresh = self.document_sha(path)
+                if fresh and fresh != sha:
+                    sha = fresh
+                    payload_body["sha"] = fresh
+                    print("      sha 已过期，取到新 sha 后重试")
+                    continue
+
             if status not in (200, 201):
                 raise RuntimeError(f"上传失败（HTTP {status}）：{text[:300]}")
 
             return json.loads(text)
 
         raise RuntimeError(f"上传失败：{last_error}")
+
+    def document_sha(self, path):
+        """取远端文件当前的 sha，供更新时使用。"""
+        try:
+            status, _, payload = self._call(
+                f"/documents?path={urllib.parse.quote(path)}"
+            )
+        except Exception:  # noqa: BLE001
+            return None
+        if status != 200:
+            return None
+        try:
+            return json.loads(payload.decode("utf-8")).get("sha")
+        except Exception:  # noqa: BLE001
+            return None
 
 
 def build_front_matter(item):
@@ -500,6 +527,41 @@ def cmd_upload(args):
         return 1
 
     items = [item for item in report["items"] if item.get("status") == "ok"]
+
+    # 用当前规则（含 UE 上下文覆盖）重新判定分类与标签。
+    # 分类规则改了之后，不必重新下载云盘文档，靠本地 staged 正文即可重算。
+    if args.reclassify:
+        changed_tokens = set()
+        for item in items:
+            staged = item.get("markdown_file")
+            if not staged or not os.path.exists(staged):
+                continue
+            with open(staged, "r", encoding="utf-8") as handle:
+                body = handle.read()
+            category, detail = classify(item["name"], body, item.get("path", ""))
+            tags = suggest_tags(item["name"], body)
+            if category != item.get("category") or tags != item.get("tags"):
+                print(
+                    f"  重分类 {item['title'][:36]}：{item.get('category')} -> {category}"
+                )
+                if detail.get("ue_signals"):
+                    print(f"           UE 特征词：{detail['ue_signals'][:6]}")
+                changed_tokens.add(item["token"])
+            item["category"] = category
+            item["category_detail"] = detail
+            item["tags"] = tags
+        report["items"] = items
+        # dry-run 不落盘，否则预演会污染报告，让随后的正式运行误判为「无变化」
+        if not args.dry_run:
+            write_json(REPORT, report)
+        print(f"按当前规则重新判定：{len(changed_tokens)} 篇发生变化")
+        if not changed_tokens:
+            print("没有文档需要更新，已退出。")
+            return 0
+        # 只重写真正变化的文档，避免给未变的文档刷一遍 updated 时间戳
+        items = [item for item in items if item.get("token") in changed_tokens]
+        print(f"只重写这 {len(items)} 篇。")
+
     if args.only:
         wanted = {extract_folder_token(value) for value in args.only}
         items = [item for item in items if item.get("token") in wanted]
@@ -542,11 +604,18 @@ def cmd_upload(args):
 
         item = {**item, "status_field": args.status}
         content = build_front_matter(item) + body.rstrip() + "\n"
-        action = "更新" if target in remote else "新增"
+        existing = remote.get(target)
+        action = "更新" if existing else "新增"
         message = f"docs: import from feishu ({action}) {item['title']}"
 
         try:
-            worker.put_document(target, content, message)
+            # 覆盖已存在的文件必须带 sha，否则 GitHub 返回 422
+            worker.put_document(
+                target,
+                content,
+                message,
+                sha=(existing or {}).get("sha"),
+            )
             uploaded += 1
             print(f"[{index}/{len(items)}] {action} {target}")
         except Exception as error:  # noqa: BLE001
@@ -697,6 +766,11 @@ def main():
         choices=["draft", "published", "archived"],
         default="draft",
         help="写入 front matter 的 status（默认 draft）",
+    )
+    p_upload.add_argument(
+        "--reclassify",
+        action="store_true",
+        help="用当前分类规则重算分类与标签后再上传（改规则后用，不重新下载）",
     )
     p_upload.set_defaults(func=cmd_upload)
 
