@@ -31,11 +31,18 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from classify import classify, suggest_tags  # noqa: E402
 from docx_to_md import docx_to_markdown  # noqa: E402
-from lark_api import EXPORTABLE, TYPE_FOLDER, FeishuClient, FeishuError  # noqa: E402
+from lark_api import (  # noqa: E402
+    EXPORTABLE,
+    TYPE_FOLDER,
+    TYPE_SHORTCUT,
+    FeishuClient,
+    FeishuError,
+)
+from xlsx_to_md import xlsx_to_markdown  # noqa: E402
 
 WORK_DIR = ".lark-work"
 STAGED_DIR = os.path.join(WORK_DIR, "staged")
-DOCX_DIR = os.path.join(WORK_DIR, "docx")
+CACHE_DIR = os.path.join(WORK_DIR, "cache")
 INVENTORY = os.path.join(WORK_DIR, "inventory.json")
 REPORT = os.path.join(WORK_DIR, "report.json")
 COOKIE_FILE = os.path.join(WORK_DIR, "worker-cookie.txt")
@@ -50,7 +57,7 @@ ORIGIN = "https://erethka.github.io"
 
 
 def ensure_dirs():
-    for path in (WORK_DIR, STAGED_DIR, DOCX_DIR):
+    for path in (WORK_DIR, STAGED_DIR, CACHE_DIR):
         os.makedirs(path, exist_ok=True)
 
 
@@ -104,6 +111,7 @@ def cmd_crawl(args):
     client = FeishuClient()
     ensure_dirs()
 
+    print(f"区域：{client.region['label']}")
     tokens = [extract_folder_token(item) for item in args.folder]
     print(f"目标文件夹：{tokens}")
 
@@ -117,7 +125,7 @@ def cmd_crawl(args):
         print(f"  -> 找到 {len(entries)} 个项目")
         all_entries.extend(entries)
 
-    # 去重（同一文档可能在多个文件夹里出现）
+    # 去重（同一文档可能在多个文件夹里出现，或被多个快捷方式指向）
     unique: dict[str, dict] = {}
     for entry in all_entries:
         token = entry.get("token")
@@ -141,18 +149,47 @@ def cmd_crawl(args):
 
     print(f"\n共 {len(items)} 个去重后的项目，类型分布：{by_type}")
     exportable = [item for item in items if item["type"] in EXPORTABLE]
-    skipped = [item for item in items if item["type"] not in EXPORTABLE]
+    unconvertible = [
+        item
+        for item in items
+        if item["type"] not in EXPORTABLE and item["type"] != TYPE_FOLDER
+    ]
+    shortcuts = [item for item in items if item.get("via_shortcut")]
+    unresolved = [item for item in items if item.get("unresolved_shortcut")]
+
     print(f"可导出为 Markdown 的文档：{len(exportable)}")
-    if skipped:
-        print(f"暂不处理（需单独方案）：{len(skipped)}")
-        for item in skipped[:15]:
-            print(f"    [{item['type']}] {item.get('path')}")
+    if shortcuts:
+        print(f"其中经快捷方式解析：{len(shortcuts)}")
+    if unresolved:
+        print(f"⚠ 快捷方式无法解析目标：{len(unresolved)}")
+        for item in unresolved[:10]:
+            print(f"    {item.get('path')}")
+    if unconvertible:
+        grouped: dict[str, list[str]] = {}
+        for item in unconvertible:
+            grouped.setdefault(item["type"], []).append(item.get("path", ""))
+        print(f"\n暂不支持导出为 Markdown（{len(unconvertible)} 个）：")
+        for file_type, paths in sorted(grouped.items()):
+            print(f"  [{file_type}] {len(paths)} 个")
+            for path in paths[:5]:
+                print(f"      {path}")
+            if len(paths) > 5:
+                print(f"      … 另有 {len(paths) - 5} 个")
     print(f"\n清单已写入 {INVENTORY}")
 
 
 # --------------------------------------------------------------------------
 # 阶段 2：导出 + 转换 + 分类
 # --------------------------------------------------------------------------
+
+
+def convert(path: str, extension: str) -> str:
+    """按实际导出格式选择转换器。"""
+    if extension == "docx":
+        return docx_to_markdown(path)
+    if extension == "xlsx":
+        return xlsx_to_markdown(path)
+    raise FeishuError(f"暂不支持把 .{extension} 转换为 Markdown")
 
 
 def cmd_process(args):
@@ -177,8 +214,7 @@ def cmd_process(args):
         token = item["token"]
         name = item.get("name") or token
         path = item.get("path") or name
-        label = f"[{index}/{len(items)}] {path}"
-        print(f"\n{label}")
+        print(f"\n[{index}/{len(items)}] {path}")
 
         if token in existing and existing[token].get("status") == "ok" and not args.force:
             print("  已处理过，跳过（--force 可重跑）")
@@ -193,28 +229,36 @@ def cmd_process(args):
             "type": item["type"],
             "url": item.get("url"),
             "modified": item.get("modified"),
+            "via_shortcut": item.get("via_shortcut"),
         }
 
-        docx_path = os.path.join(DOCX_DIR, f"{slugify(name)}-{token[:8]}.docx")
-
         try:
-            if not (os.path.exists(docx_path) and os.path.getsize(docx_path) > 0):
-                print("  导出 docx …")
-                file_token = client.export_docx(token, item["type"])
+            extension = client.extension_for(item["type"])
+            if not extension:
+                raise FeishuError(f"类型 {item['type']} 不支持导出")
+
+            cached = os.path.join(
+                CACHE_DIR, f"{slugify(name)}-{token[:8]}.{extension}"
+            )
+
+            if not (os.path.exists(cached) and os.path.getsize(cached) > 0):
+                print(f"  导出 .{extension} …")
+                file_token, actual = client.export(token, item["type"], extension)
                 blob = client.download(file_token)
-                with open(docx_path, "wb") as handle:
+                with open(cached, "wb") as handle:
                     handle.write(blob)
                 print(f"  已下载 {len(blob)} bytes")
             else:
-                print("  复用已下载的 docx")
+                print(f"  复用已下载的 .{extension}")
+                actual = extension
 
-            markdown = docx_to_markdown(docx_path)
+            markdown = convert(cached, actual)
             if not markdown.strip():
                 raise FeishuError("转换结果为空")
 
             category, detail = classify(name, markdown, path)
             tags = suggest_tags(name, markdown)
-            title = re.sub(r"\.(docx?|markdown?|md)$", "", name, flags=re.I).strip() or name
+            title = re.sub(r"\.(docx?|xlsx?|csv|markdown?|md)$", "", name, flags=re.I).strip() or name
 
             record.update(
                 {
@@ -224,7 +268,8 @@ def cmd_process(args):
                     "category_detail": detail,
                     "tags": tags,
                     "chars": len(markdown),
-                    "docx": docx_path,
+                    "export_extension": actual,
+                    "cached_file": cached,
                     "markdown_preview": markdown[:400],
                 }
             )

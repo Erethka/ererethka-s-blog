@@ -1,12 +1,15 @@
-"""飞书 OAuth 本地回调服务。
+"""Lark / 飞书 OAuth 本地回调服务。
 
 用途：用自建应用的 App ID / App Secret 换 user_access_token。
-流程：本脚本打印授权链接 -> 浏览器里点「授权」-> 飞书回调到
+流程：本脚本打印授权链接 -> 浏览器里点「授权」-> 回调到
 http://localhost:17890/callback -> 脚本用 code 换 token 并写入
 .lark-secrets/feishu-token.json。
 
+注意：飞书（中国版）和 Lark（国际版）是两套独立体系，用 --region 区分，
+默认 lark（国际版）。两边的凭证不可互用。
+
 用法：
-    python tools/lark_auth.py --app-id cli_xxx --app-secret xxx
+    python tools/lark_auth.py --region lark --app-id cli_xxx --app-secret xxx
 """
 
 import argparse
@@ -21,16 +24,18 @@ import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from lark_regions import DEFAULT_REGION, get_region, region_choices  # noqa: E402
+
 REDIRECT_URI = "http://localhost:17890/callback"
-AUTHORIZE_URL = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
-TOKEN_URL = "https://open.feishu.cn/open-apis/authen/v2/oauth/token"
 SECRET_DIR = ".lark-secrets"
 TOKEN_FILE = os.path.join(SECRET_DIR, "feishu-token.json")
 
 SCOPES = " ".join(
     [
         "drive:drive:readonly",
-        "docs:document:export",
+        "drive:export:readonly",
         "offline_access",
     ]
 )
@@ -69,21 +74,27 @@ class CallbackHandler(BaseHTTPRequestHandler):
         pass
 
 
-def exchange_code(app_id, app_secret, code):
-    payload = urllib.parse.urlencode(
-        {
-            "grant_type": "authorization_code",
-            "client_id": app_id,
-            "client_secret": app_secret,
-            "code": code,
-            "redirect_uri": REDIRECT_URI,
-        }
-    ).encode()
+def exchange_code(region, app_id, app_secret, code):
+    fields = {
+        "grant_type": "authorization_code",
+        "client_id": app_id,
+        "client_secret": app_secret,
+        "code": code,
+        "redirect_uri": REDIRECT_URI,
+    }
+
+    if region["token_body"] == "json":
+        # 国际版 Lark 文档固定 Content-Type: application/json
+        data = json.dumps(fields).encode("utf-8")
+        content_type = "application/json; charset=utf-8"
+    else:
+        data = urllib.parse.urlencode(fields).encode()
+        content_type = "application/x-www-form-urlencoded"
 
     request = urllib.request.Request(
-        TOKEN_URL,
-        data=payload,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        region["token_url"],
+        data=data,
+        headers={"Content-Type": content_type},
         method="POST",
     )
 
@@ -95,8 +106,18 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--app-id", required=True)
     parser.add_argument("--app-secret", required=True)
+    parser.add_argument(
+        "--region",
+        default=DEFAULT_REGION,
+        choices=region_choices(),
+        help="lark=国际版（默认），feishu=中国版",
+    )
     parser.add_argument("--no-browser", action="store_true")
     args = parser.parse_args()
+
+    region = get_region(args.region)
+    print(f"区域：{region['label']}")
+    print(f"授权端点：{region['authorize']}")
 
     state = secrets.token_urlsafe(16)
     query = urllib.parse.urlencode(
@@ -108,7 +129,7 @@ def main():
             "scope": SCOPES,
         }
     )
-    authorize = f"{AUTHORIZE_URL}?{query}"
+    authorize = f"{region['authorize']}?{query}"
 
     server = HTTPServer(("127.0.0.1", 17890), CallbackHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -147,15 +168,22 @@ def main():
         return 1
 
     print("拿到授权码，正在换取 token…")
-    token = exchange_code(args.app_id, args.app_secret, _result["code"])
+    try:
+        token = exchange_code(region, args.app_id, args.app_secret, _result["code"])
+    except urllib.error.HTTPError as error:
+        detail = error.read().decode("utf-8", "replace")[:500]
+        print(f"换取 token 失败（HTTP {error.code}）：{detail}")
+        return 1
 
-    if token.get("code") not in (0, None) or "access_token" not in token:
+    # v2 接口成功时直接返回 access_token；失败时返回 code/error
+    if not token.get("access_token"):
         print("换取 token 失败：")
         print(json.dumps(token, ensure_ascii=False, indent=2))
         return 1
 
     os.makedirs(SECRET_DIR, exist_ok=True)
     token["_obtained_at"] = int(time.time())
+    token["_region"] = args.region
     token["_app_id"] = args.app_id
     # 保存 secret 是为了让 lark_api.py 能在 token 过期时用 refresh_token 自动续期。
     # 该文件已被 .gitignore 忽略，权限同样收紧。
