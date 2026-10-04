@@ -50,6 +50,20 @@ STRIKE_TAGS = {qn("w:strike"), qn("w:dstrike")}
 # 代码类样式名（Lark 导出可能用这些样式而不是字体）
 CODE_STYLE_HINTS = ("code", "preformatted", "html preformatted", "代码")
 
+# Lark 把代码块导出成「单元格表格」，首行是语言名
+KNOWN_CODE_LANGUAGES = {
+    "c", "c++", "cpp", "c#", "csharp", "cs", "java", "javascript", "js",
+    "typescript", "ts", "python", "py", "go", "golang", "rust", "rs",
+    "ruby", "php", "swift", "kotlin", "scala", "perl", "lua", "r",
+    "sql", "html", "css", "scss", "less", "xml", "json", "yaml", "yml",
+    "toml", "ini", "bash", "sh", "shell", "zsh", "powershell", "ps1",
+    "bat", "cmd", "dockerfile", "makefile", "cmake", "gradle", "maven",
+    "objective-c", "objc", "dart", "elixir", "erlang", "haskell", "clojure",
+    "matlab", "vb", "vbnet", "asm", "assembly", "text", "plaintext",
+    "markdown", "md", "diff", "patch", "graphql", "proto", "hlsl", "glsl",
+    "wgsl", "cuda", "unreal", "blueprint", "ini/cfg",
+}
+
 
 # --------------------------------------------------------------------------
 # XML 层基础读取
@@ -266,6 +280,56 @@ def paragraph_markdown(paragraph: Paragraph) -> str:
     return render_inline(paragraph) or _plain_text(paragraph._p)
 
 
+def extract_code_table(table: Table):
+    """识别 Lark 导出的「代码块表格」。
+
+    Lark 的代码块在 docx 里是一个 1x1 单元格表格，首行是语言名
+    （如 C++），其余行才是代码。识别成功时返回 (language, code)，
+    否则返回 None，交给普通表格渲染。
+
+    如果不做这个识别，单元格会被压成单行，代码彻底变成垃圾。
+    """
+    if len(table.rows) != 1 or len(table.columns) != 1:
+        return None
+
+    cell = table.rows[0].cells[0]
+    raw = cell.text
+    if not raw.strip():
+        return None
+
+    lines = raw.splitlines()
+    if len(lines) < 2:
+        return None
+
+    first = lines[0].strip()
+    if not first:
+        return None
+
+    # 只允许「纯语言名」作为首行，避免把普通表格误判成代码
+    if len(first) > 24 or first.lower() not in KNOWN_CODE_LANGUAGES:
+        return None
+
+    code = "\n".join(lines[1:]).rstrip()
+    if not code.strip():
+        return None
+
+    return first, code
+
+
+def code_fence(language: str, code: str) -> str:
+    """用足够长的围栏包裹代码，避免代码里出现 ``` 时截断。"""
+    longest = 0
+    for match in re.finditer(r"`+", code):
+        longest = max(longest, len(match.group(0)))
+    fence = "`" * max(3, longest + 1)
+
+    label = language.strip()
+    if label.lower() in ("plaintext", "text", "txt"):
+        label = ""
+
+    return f"{fence}{label}\n{code}\n{fence}"
+
+
 def table_markdown(table: Table) -> str:
     rows = []
     for row in table.rows:
@@ -317,6 +381,11 @@ def docx_to_markdown(path: str) -> str:
     for block in iter_blocks(document):
         if isinstance(block, Table):
             flush_code()
+            code_table = extract_code_table(block)
+            if code_table:
+                language, code = code_table
+                chunks.append(code_fence(language, code))
+                continue
             rendered = table_markdown(block)
             if rendered:
                 chunks.append(rendered)

@@ -256,6 +256,28 @@ def cmd_process(args):
             if not markdown.strip():
                 raise FeishuError("转换结果为空")
 
+            # 图片没随导出落地时，文档常常只剩一个标题。
+            # 这种空壳传到博客没有意义，标为 skipped 让人确认。
+            body_size = len(markdown.strip()) - len(name)
+            if len(markdown.strip()) < args.min_chars:
+                record.update(
+                    {
+                        "status": "skipped",
+                        "reason": f"正文过短（{len(markdown.strip())} 字符），疑似只有标题或内容全在未导出的图片里",
+                        "chars": len(markdown.strip()),
+                        "cached_file": cached,
+                        "export_extension": actual,
+                        "markdown_preview": markdown[:400],
+                    }
+                )
+                print(f"  跳过：正文仅 {len(markdown.strip())} 字符，疑似空壳")
+                results.append(record)
+                write_json(
+                    REPORT,
+                    {"generated_at": now_iso(), "count": len(results), "items": results},
+                )
+                continue
+
             category, detail = classify(name, markdown, path)
             tags = suggest_tags(name, markdown)
             title = re.sub(r"\.(docx?|xlsx?|csv|markdown?|md)$", "", name, flags=re.I).strip() or name
@@ -291,19 +313,30 @@ def cmd_process(args):
             {"generated_at": now_iso(), "count": len(results), "items": results},
         )
 
-    ok = sum(1 for item in results if item.get("status") == "ok")
-    failed = [item for item in results if item.get("status") != "ok"]
-    print(f"\n处理完成：成功 {ok}，失败 {len(failed)}")
+    ok = [item for item in results if item.get("status") == "ok"]
+    skipped = [item for item in results if item.get("status") == "skipped"]
+    failed = [item for item in results if item.get("status") not in ("ok", "skipped")]
+
+    print(f"\n处理完成：成功 {len(ok)}，跳过 {len(skipped)}，失败 {len(failed)}")
+    for item in skipped:
+        print(f"  ⊘ {item.get('path')} -> {item.get('reason')}")
     for item in failed:
         print(f"  ✗ {item.get('path')} -> {item.get('error')}")
 
     categories: dict[str, int] = {}
-    for item in results:
-        if item.get("status") == "ok":
-            categories[item["category"]] = categories.get(item["category"], 0) + 1
+    for item in ok:
+        categories[item["category"]] = categories.get(item["category"], 0) + 1
     print("\n分类分布：")
     for name, count in sorted(categories.items(), key=lambda kv: -kv[1]):
         print(f"  {count:3}  {name}")
+
+    uncertain = [item for item in ok if item.get("category_detail", {}).get("ambiguous")]
+    if uncertain:
+        print(f"\n分类不确定，建议人工确认（{len(uncertain)} 篇）：")
+        for item in uncertain:
+            scores = item["category_detail"]["scores"]
+            print(f"  ? {item['title'][:40]}  ->  {scores}")
+
     print(f"\n报告已写入 {REPORT}")
     return 0
 
@@ -314,7 +347,23 @@ def cmd_process(args):
 
 
 class BlogWorker:
-    """通过博客 Worker 的会话读写私有仓库 docs/。"""
+    """通过博客 Worker 的会话读写私有仓库 docs/。
+
+    Worker 前面挡着 Cloudflare 的浏览器完整性校验，用默认的
+    python-urllib User-Agent 会直接被 403 拦掉（error code 1010），
+    因此这里必须伪装成浏览器请求头。
+    """
+
+    BROWSER_HEADERS = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"
+        ),
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "Origin": ORIGIN,
+        "Referer": f"{ORIGIN}/",
+    }
 
     def __init__(self, password=None):
         self.cookie = ""
@@ -325,7 +374,7 @@ class BlogWorker:
                 self.cookie = handle.read().strip()
 
     def _call(self, path, method="GET", body=None):
-        headers = {"Origin": ORIGIN, "User-Agent": "ererethka-lark-import"}
+        headers = dict(self.BROWSER_HEADERS)
         if self.cookie:
             headers["Cookie"] = self.cookie
         data = None
@@ -378,16 +427,38 @@ class BlogWorker:
             )
         return json.loads(payload.decode("utf-8")).get("documents", [])
 
-    def put_document(self, path, content, message):
-        status, _, payload = self._call(
-            "/documents",
-            "PUT",
-            {"path": path, "content": content, "message": message},
-        )
-        text = payload.decode("utf-8", "replace")
-        if status not in (200, 201):
-            raise RuntimeError(f"上传失败（HTTP {status}）：{text[:300]}")
-        return json.loads(text)
+    def put_document(self, path, content, message, retries=3):
+        """写入文档。网络抖动（TLS 中断、连接重置）时有重试。"""
+        last_error = None
+        for attempt in range(1, retries + 1):
+            try:
+                status, _, payload = self._call(
+                    "/documents",
+                    "PUT",
+                    {"path": path, "content": content, "message": message},
+                )
+            except Exception as error:  # noqa: BLE001
+                last_error = error
+                if attempt < retries:
+                    print(f"      网络抖动，{attempt}/{retries - 1} 次重试：{error}")
+                    time.sleep(2 * attempt)
+                    continue
+                raise RuntimeError(f"上传失败，已重试 {retries} 次：{error}") from error
+
+            text = payload.decode("utf-8", "replace")
+
+            # 5xx / 429 值得重试，4xx 是请求本身的问题
+            if status in (429, 500, 502, 503, 504) and attempt < retries:
+                print(f"      HTTP {status}，{attempt}/{retries - 1} 次重试")
+                time.sleep(2 * attempt)
+                continue
+
+            if status not in (200, 201):
+                raise RuntimeError(f"上传失败（HTTP {status}）：{text[:300]}")
+
+            return json.loads(text)
+
+        raise RuntimeError(f"上传失败：{last_error}")
 
 
 def build_front_matter(item):
@@ -440,6 +511,19 @@ def cmd_upload(args):
     remote = {doc["path"]: doc for doc in worker.list_documents()}
     print(f"私有仓库 docs/ 现有 {len(remote)} 个文档")
 
+    # 只补传远端还不存在的文档，用于网络抖动后继续，不会重复覆盖已成功的
+    if args.retry_failed:
+        before = len(items)
+        items = [
+            item
+            for item in items
+            if f"docs/{slugify(item['title'])}.md" not in remote
+        ]
+        print(f"只补传缺失的文档：{before} -> {len(items)}")
+        if not items:
+            print("没有缺失的文档，无需补传。")
+            return 0
+
     if args.dry_run:
         print("\n[DRY RUN] 将要写入的文件：")
         for item in items:
@@ -456,6 +540,7 @@ def cmd_upload(args):
         with open(item["markdown_file"], "r", encoding="utf-8") as handle:
             body = handle.read()
 
+        item = {**item, "status_field": args.status}
         content = build_front_matter(item) + body.rstrip() + "\n"
         action = "更新" if target in remote else "新增"
         message = f"docs: import from feishu ({action}) {item['title']}"
@@ -477,6 +562,79 @@ def cmd_upload(args):
 # --------------------------------------------------------------------------
 # 阶段 4：读回验证
 # --------------------------------------------------------------------------
+
+
+def replace_front_matter_status(content: str, status: str) -> str:
+    """只改 front matter 里的 status，正文原样保留。"""
+    match = re.match(r"^---\s*\n([\s\S]*?)\n---\s*\n?", content)
+    if not match:
+        return content
+
+    block = match.group(1)
+    if re.search(r"^status\s*:", block, re.M):
+        block = re.sub(r"^status\s*:.*$", f"status: {yaml_string(status)}", block, flags=re.M)
+    else:
+        block = block.rstrip("\n") + f"\nstatus: {yaml_string(status)}"
+
+    return f"---\n{block}\n---\n" + content[match.end() :]
+
+
+def cmd_set_status(args):
+    report = read_json(REPORT, None)
+    if not report:
+        print(f"找不到 {REPORT}，请先运行 process。")
+        return 1
+
+    items = [item for item in report["items"] if item.get("status") == "ok"]
+    if args.token:
+        wanted = set(args.token)
+        items = [item for item in items if item.get("token") in wanted]
+    if not items:
+        print("没有匹配的文档。")
+        return 1
+
+    worker = BlogWorker(args.password)
+    remote = {doc["path"]: doc for doc in worker.list_documents()}
+
+    changed = 0
+    failures = []
+    for index, item in enumerate(items, start=1):
+        target = f"docs/{slugify(item['title'])}.md"
+        if target not in remote:
+            print(f"[{index}/{len(items)}] 跳过（远端不存在）{target}")
+            continue
+
+        status, _, payload = worker._call(
+            f"/documents?path={urllib.parse.quote(target)}"
+        )
+        if status != 200:
+            failures.append((target, f"读取失败 HTTP {status}"))
+            print(f"[{index}/{len(items)}] 读取失败 {target}")
+            continue
+
+        current = json.loads(payload.decode("utf-8")).get("content", "")
+        updated = replace_front_matter_status(current, args.status)
+
+        if updated == current:
+            print(f"[{index}/{len(items)}] 无需修改 {target}")
+            continue
+
+        try:
+            worker.put_document(
+                target,
+                updated,
+                f"docs: set status to {args.status} ({item['title']})",
+            )
+            changed += 1
+            print(f"[{index}/{len(items)}] {args.status}  {target}")
+        except Exception as error:  # noqa: BLE001
+            failures.append((target, str(error)))
+            print(f"[{index}/{len(items)}] 失败 {target} -> {error}")
+
+    print(f"\n完成：修改 {changed}，失败 {len(failures)}")
+    for target, error in failures:
+        print(f"  ✗ {target} -> {error}")
+    return 0 if not failures else 1
 
 
 def cmd_verify(args):
@@ -517,13 +675,36 @@ def main():
     p_process.add_argument("--limit", type=int, help="只处理前 N 篇（试跑用）")
     p_process.add_argument("--only", action="append", help="只处理指定 token")
     p_process.add_argument("--force", action="store_true", help="重跑已处理的文档")
+    p_process.add_argument(
+        "--min-chars",
+        type=int,
+        default=80,
+        help="正文少于此长度则跳过（默认 80，用于过滤只有标题的图片型文档）",
+    )
     p_process.set_defaults(func=cmd_process)
 
     p_upload = sub.add_parser("upload", help="上传到私有仓库 docs/")
     p_upload.add_argument("--password", help="博客登录密码（换取 Worker 会话）")
     p_upload.add_argument("--only", action="append", help="只上传指定 token")
     p_upload.add_argument("--dry-run", action="store_true", help="只打印将要写入的文件")
+    p_upload.add_argument(
+        "--retry-failed",
+        action="store_true",
+        help="只补传远端尚不存在的文档（网络中断后继续用）",
+    )
+    p_upload.add_argument(
+        "--status",
+        choices=["draft", "published", "archived"],
+        default="draft",
+        help="写入 front matter 的 status（默认 draft）",
+    )
     p_upload.set_defaults(func=cmd_upload)
+
+    p_status = sub.add_parser("set-status", help="批量修改已上传文档的 status")
+    p_status.add_argument("--status", choices=["draft", "published", "archived"], required=True)
+    p_status.add_argument("--password", help="博客登录密码")
+    p_status.add_argument("--token", action="append", help="只改指定飞书 token 对应的文档")
+    p_status.set_defaults(func=cmd_set_status)
 
     p_verify = sub.add_parser("verify", help="读回 docs/ 列表验证")
     p_verify.add_argument("--password", help="博客登录密码")

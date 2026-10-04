@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from docx_to_md import docx_to_markdown  # noqa: E402
 from lark_api import EXPORTABLE, FeishuClient, FeishuError  # noqa: E402
+from lark_import import extract_folder_token  # noqa: E402
 from xlsx_to_md import xlsx_to_markdown  # noqa: E402
 
 WORK = ".lark-work"
@@ -47,7 +48,11 @@ def main():
         print(f"   ⚠ 身份接口失败（不影响云盘读取）：{error}")
 
     print("\n3) 列出云盘内容")
-    folder = args.folder or ""
+    # 支持直接粘贴文件夹链接；调用 API 前必须取出其中的 token
+    folder = extract_folder_token(args.folder) if args.folder else ""
+    if args.folder:
+        print(f"   输入 : {args.folder}")
+        print(f"   token: {folder} (len {len(folder)})")
     try:
         items = client.list_folder(folder)
     except FeishuError as error:
