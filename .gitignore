@@ -55,3 +55,13 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### 飞书导入流水线（凭证与中间产物，绝不入库）
+.lark-secrets/
+.lark-work/
+.dsh-probe/
+.dsh-sandbox-probe.txt
+
+### Python
+__pycache__/
+*.py[cod]
