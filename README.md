@@ -1,44 +1,35 @@
 # ererethka の 宝藏之地
 
-一个无需后端的静态个人博客外壳，视觉语言迁移自 [XHBlogs](https://github.com/heiehiehi/XinghuisamaBlogs) 的玻璃拟态布局，并保留本项目的 Apex Legends 传家宝记录功能。
+静态个人博客，包含技术档案、影像相册和 Apex 补给记录。全站采用受《明日方舟》平面设计启发的档案版式：深灰／纸色双主题、黄绿点缀、编号、细线分区与直角组件。保留原有个人图片与内容，没有使用游戏角色或官方标识作为界面素材。
 
 ## 页面
 
-- `/`：个人首页，包含资料卡、项目、照片墙预览、主题切换和站点仪表盘。
-- `/apex/`：Apex 开箱记录子页，统计总开箱数、500 包保底进度和传家宝数量。
+- `/`：个人首页、站内页面搜索、档案入口、影像选集与主题切换。
+- `/dev/`：技术档案索引，支持搜索、分类、Markdown 导入，以及阅读、编辑和分栏视图。
+- `/dev/reader.html?doc=…`：独立阅读页，包含目录、标签与上一篇／下一篇导航。
+- `/photowall/`：相册检索、相册浏览与支持键盘操作的图片灯箱。
+- `/apex/`：记录开启包数，查看累计数量、500 包循环进度与历史记录。
 
-导航中的项目、归档、照片墙、音乐和关于区块是可扩展的静态锚点，后续可以继续加入文章和工具页面。
+全站公共颜色和导航样式在 `site-polish.css`，首页样式在 `styles-polish.css`；各子页样式位于对应目录。首页保留 `#home`、`#projects`、`#timeline`、`#photowall`、`#music` 与 `#about` 锚点。
 
-## Apex 记录规则
+## 私人数据
 
-- 只记录每次开了多少包，以及本次是否出了传家宝。
-- 每累计 500 包进入一次保底循环；勾选“本次开出传家宝”后，当前循环立即重置为 0。
-- 记录先保存到浏览器 `localStorage`，不会因为刷新页面丢失。
+技术文档和 Apex 记录继续通过现有 Cloudflare Worker 代理访问 GitHub 私有仓库。访问私人页面时使用口令登录；浏览器通过会话 Cookie 请求接口，不需要填写或保存 GitHub Token。Worker 部署说明见 `worker/README.md`。
 
-## GitHub 私库同步
-
-在 `/apex/` 页面右上角齿轮中填写：
-
-1. GitHub 用户名/组织
-2. 私有数据仓库名
-3. 分支（默认 `main`）
-4. `data/apex-records.json` 文件路径
-5. Fine-grained Personal Access Token
-
-Token 只保存在当前浏览器。测试连接成功后，新增或删除记录会通过 GitHub Contents API 自动提交到私有仓库；打开 Apex 页面时会自动拉取远端数据。
-
-建议 Token 只授予目标仓库的 `Contents: Read and write` 权限，不要把 Token 或真实记录提交到公开的网站仓库。
+Apex 的显示进度按累计包数对 500 取余计算，不根据是否获得传家宝重置。浏览器保留本地记录缓存，新增与删除操作继续使用原有私人同步接口。界面中的循环数字仅是个人记录统计。
 
 ## 本地预览
 
-直接双击 `index.html`，或在项目根目录运行任意静态服务器：
+在项目根目录启动静态 HTTP 服务器，例如：
 
-```text
-npx serve .
+```sh
+python -m http.server 4173
 ```
 
-然后访问 `/apex/` 查看 Apex 子页。
+访问 `http://localhost:4173/`。私人接口沿用生产环境的 Origin 和会话配置；本地验收使用独立的模拟响应，不修改真实私人记录。
+
+项目没有前端构建步骤。发布沿用仓库现有 GitHub Pages 配置；修改 CSS 或 JavaScript 后，应同步更新 HTML 中的资源版本参数，避免浏览器使用旧缓存。
 
 ## 资产与署名
 
-页面使用了 XHBlogs 仓库中的 `siamese-cat.png` 头像资产，并根据其 CC BY-NC 4.0 许可保留署名。迁移后的页面代码与个人 Apex 数据仍由本项目维护；详细说明见 `ATTRIBUTION.md`。
+`siamese-cat.png` 头像来自 [XHBlogs](https://github.com/heiehiehi/XinghuisamaBlogs)，保留 CC BY-NC 4.0 署名。插画来自项目原有的本地资源；详细说明见 `ATTRIBUTION.md`。

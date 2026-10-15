@@ -46,7 +46,9 @@
     modal.id = "apexAuthModal";
     modal.hidden = true;
     modal.setAttribute("aria-hidden", "true");
-    modal.innerHTML = `<section class="apex-auth-card" role="dialog" aria-modal="true" aria-labelledby="apexAuthTitle"><div class="apex-auth-lock">✦</div><div class="apex-auth-kicker">PRIVATE APEX ARCHIVE</div><h2 id="apexAuthTitle">确认身份</h2><p class="apex-auth-copy">这是你的私人 Apex 数据。输入博客登录密码后，网站会通过安全会话自动访问私有仓库，无需在设备上配置 GitHub Token。</p><form id="apexAuthForm"><label for="apexAuthPassword">登录密码<input id="apexAuthPassword" type="password" autocomplete="current-password" required placeholder="输入密码"></label><div class="apex-auth-actions"><button class="apex-auth-submit" type="submit">验证并同步</button></div><p class="apex-auth-status" id="apexAuthStatus" role="status"></p></form></section>`;
+    const apexPage = document.body.dataset.route === "apex";
+    const archivePage = ["dev", "reader"].includes(document.body.dataset.route);
+    modal.innerHTML = `<section class="apex-auth-card" role="dialog" aria-modal="true" aria-labelledby="apexAuthTitle"><div class="apex-auth-lock" aria-hidden="true">△</div><div class="apex-auth-kicker">${apexPage ? "Apex · 私人档案" : archivePage ? "ERE / PRIVATE ARCHIVE" : "私人档案"}</div><h2 id="apexAuthTitle">${apexPage ? "登录开箱记录" : archivePage ? "进入私人档案" : "确认身份"}</h2><p class="apex-auth-copy">${apexPage ? "输入博客密码，查看并同步你的开箱记录。" : archivePage ? "输入博客密码，继续阅读与整理你的技术记录。" : "输入博客密码，查看并同步你的私人记录。"}</p><form id="apexAuthForm"><label for="apexAuthPassword">登录密码<input id="apexAuthPassword" type="password" autocomplete="current-password" required placeholder="输入密码"></label><div class="apex-auth-actions"><button class="apex-auth-submit" type="submit">${apexPage ? "登录并同步" : archivePage ? "登录档案" : "验证并同步"}</button></div><p class="apex-auth-status" id="apexAuthStatus" role="status"></p></form></section>`;
     document.body.appendChild(modal);
     state.modal = modal;
     modal.querySelector("form").addEventListener("submit", async (event) => {

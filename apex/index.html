@@ -3,60 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b1020">
-  <meta name="description" content="Apex Legends 开箱次数记录与 500 包保底进度。">
-  <title>Apex 开箱记录 · ererethka の 宝藏之地</title>
+  <meta name="theme-color" content="#171b1d">
+  <meta name="description" content="Apex Legends 私人开箱记录：记录开启数量，查看累计与 500 包循环进度。">
+  <title>Apex 开箱记录 · ererethka</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css?v=20260910">
-  <link rel="stylesheet" href="../background-library.css?v=20260910">
-  <link rel="stylesheet" href="./apex-theme.css?v=20260910-3">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css?v=20261016-archive">
+  <link rel="stylesheet" href="../site-polish.css?v=20261016-archive">
+  <link rel="stylesheet" href="./apex-theme.css?v=20261016-archive">
 </head>
 <body data-route="apex">
-  <div class="ambient" aria-hidden="true"><div class="ambient-slides" id="backgroundSlides"></div><div class="ambient-wash"></div><div class="ambient-orb orb-left"></div><div class="ambient-orb orb-right"></div><div class="ambient-grain"></div></div>
+  <a class="skip-link" href="#apexMain">跳到正文</a>
   <header class="site-nav" id="siteNav">
     <div class="nav-inner">
-      <a class="brand" href="../index.html#home" data-nav="home" aria-label="返回首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand-copy"><strong>ererethka <em>の</em> 宝藏之地</strong><small>PERSONAL DIGITAL GARDEN</small></span></a>
-      <nav class="desktop-links" aria-label="主导航"><a href="../index.html#home" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">项目</a><a href="../dev/index.html" data-nav="dev">技术记录</a><a href="../index.html#timeline" data-nav="timeline">归档</a><a href="../index.html#photowall" data-nav="photowall">照片墙</a><a href="../index.html#music" data-nav="music">音乐</a><a href="./index.html" data-nav="apex">Apex记录</a><a href="../index.html#about" data-nav="about">关于</a></nav>
-      <div class="nav-actions"><button class="theme-button" id="themeButton" type="button" title="切换日夜主题" aria-label="切换日夜主题"><span id="themeIcon">✦</span><span id="themeLabel">夜间</span></button><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="打开导航" aria-expanded="false">☰</button></div>
+      <a class="brand" href="../index.html" aria-label="返回首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand-copy"><strong>ererethka <em>の</em> 宝藏之地</strong><small>PERSONAL FIELD ARCHIVE</small></span></a>
+      <nav class="desktop-links" aria-label="主导航"><a href="../index.html" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">探索</a><a href="../dev/index.html" data-nav="dev">技术记录</a><a href="../photowall/index.html" data-nav="photowall">照片墙</a><a href="./index.html" data-nav="apex">Apex 记录</a><a href="../index.html#about" data-nav="about">关于</a></nav>
+      <div class="nav-actions"><button class="theme-button" id="themeButton" type="button" aria-label="切换日夜主题"><span id="themeIcon">✦</span><span id="themeLabel">夜间</span></button><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="打开导航" aria-controls="mobileLinks" aria-expanded="false">☰</button></div>
     </div>
-    <nav class="mobile-links" id="mobileLinks" aria-label="移动端导航"><a href="../index.html#home" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">项目</a><a href="../dev/index.html" data-nav="dev">技术记录</a><a href="../index.html#timeline" data-nav="timeline">归档</a><a href="../photowall/index.html" data-nav="photowall">照片墙</a><a href="../index.html#music" data-nav="music">音乐</a><a href="./index.html" data-nav="apex">Apex记录</a><a href="../index.html#about" data-nav="about">关于</a></nav>
+    <nav class="mobile-links" id="mobileLinks" aria-label="移动端导航"><a href="../index.html" data-nav="home">首页</a><a href="../index.html#projects" data-nav="projects">探索</a><a href="../dev/index.html" data-nav="dev">技术记录</a><a href="../photowall/index.html" data-nav="photowall">照片墙</a><a href="./index.html" data-nav="apex">Apex 记录</a><a href="../index.html#about" data-nav="about">关于</a></nav>
   </header>
 
-  <main class="page-container apex-page">
-    <div class="apex-toolbar"><span>PERSONAL ARCHIVE · APEX LEGENDS</span><span class="sync-pill" id="syncPill"><i></i><span id="syncLabel">等待身份验证</span></span></div>
+  <main class="page-container apex-page" id="apexMain" tabindex="-1">
+    <header class="apex-page-heading">
+      <div class="apex-heading-copy"><div class="apex-eyebrow"><span class="apex-section-code">03</span> ERETHKA / APEX LEGENDS</div><div class="apex-title-group"><h1>开箱档案</h1><span class="apex-word" aria-hidden="true">SUPPLY<span>://</span></span></div><p class="apex-page-description">记录每次开启，追踪累计进度。</p></div>
+      <div class="apex-masthead-index"><span class="apex-index-label">PERSONAL RECORD / 私人记录</span><span class="apex-game-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 5 28 27h-8l-4-8-4 8H4L16 5Z"/></svg><b>APEX<br>LEGENDS</b></span><span class="sync-pill" id="syncPill" role="status"><i></i><span id="syncLabel">等待登录</span></span><div class="apex-barcode" aria-hidden="true"></div></div>
+    </header>
+    <div class="apex-section-line"><span>01 / CYCLE STATUS <b>循环统计</b></span><span>500 PACKS / CYCLE <i aria-hidden="true">■</i></span></div>
 
-    <section class="apex-hero">
-      <div class="apex-hero-copy"><span class="kicker">APEX LEGENDS / ARCHIVE</span><h1>只记录开了多少包。</h1><p>因为 Apex 没有直接提供已开启箱子的累计统计，这里只做一件事：记录每次开了多少包，并自动计算当前 500 包保底循环。</p><div class="hero-rule"><span>500 PACK RULE</span><strong>累计 500 包后，进入下一轮保底计数</strong></div></div>
-      <div class="apex-hero-mark" aria-hidden="true"><span>APEX</span><strong>500</strong><small>PACK CYCLE</small></div>
+    <section class="cycle-overview apex-surface" aria-label="开箱统计">
+      <div class="cycle-main"><div class="cycle-heading"><h2>循环进度</h2><span id="cycleNumber">第 1 轮</span></div><div class="cycle-amount"><strong id="pityProgress">0</strong><span>/ 500 <small>包</small></span><span class="cycle-remaining">距下一轮 <b id="packsToPity">500</b> 包</span></div><div class="cycle-track" id="cycleProgress" role="progressbar" aria-label="当前 500 包循环进度" aria-valuemin="0" aria-valuemax="500" aria-valuenow="0"><span id="cycleFill"></span></div><div class="cycle-scale" aria-hidden="true"><span>0</span><span>125</span><span>250</span><span>375</span><span>500</span></div></div>
+      <dl class="cycle-summary"><div><dt>累计开启</dt><dd><strong id="totalPacks">0</strong><span>包</span></dd></div><div><dt>记录笔数</dt><dd><strong id="recordCount">0</strong><span>笔</span></dd></div><div class="last-entry"><dt>最近记录</dt><dd id="lastRecordedDate">暂无记录</dd></div></dl>
     </section>
 
-    <section class="apex-stats" aria-label="开箱统计">
-      <article class="glass-card apex-stat"><span>总开箱数</span><strong id="totalPacks">0</strong><small>ALL PACKS OPENED</small><i class="stat-symbol">↗</i></article>
-      <article class="glass-card apex-stat"><span>当前保底进度</span><strong id="pityProgress">0 / 500</strong><small>CURRENT CYCLE</small><i class="stat-symbol">◌</i></article>
-      <article class="glass-card apex-stat"><span>距离下一保底</span><strong id="packsToPity">500</strong><small>PACKS TO GUARANTEE</small><i class="stat-symbol">✦</i></article>
-    </section>
-
-    <section class="apex-workspace">
-      <article class="glass-card apex-panel record-panel" id="recordPanel">
-        <div class="panel-heading"><div><span class="kicker">NEW ENTRY / 01</span><h2>记录一次开箱</h2></div><span class="mini-label">PRIVATE SYNC</span></div>
-        <p class="panel-copy">每次打开 Apex 后，把这次实际开启的箱子数量记下来即可。不记录物品、不记录品质，也不需要填写任何掉落信息。</p>
-        <form id="recordForm">
-          <div class="field-row"><label class="field">开箱日期<input id="date" type="date" required></label><label class="field">本次开了几包<div class="number-input"><input id="packs" type="number" min="1" max="9999" value="1" required><span>PACKS</span></div></label></div>
-          <div class="count-tip"><span>+</span><div><strong>只记录数量</strong><small>例如今天开了 12 包，就保存一条「12 PACKS」记录。</small></div></div>
-          <div class="form-foot"><span class="required-note"><b>*</b> 日期 + 开箱数量</span><button class="primary-button" type="submit">保存这次记录 →</button></div>
-        </form>
-      </article>
-      <aside class="glass-card apex-panel insight-panel"><div class="panel-heading"><div><span class="kicker">YOUR CYCLE / 02</span><h2>保底进度</h2></div><span class="mini-label">500 RULE</span></div><div class="cycle-number" id="cycleText">0 / 500 packs</div><p class="vibe-title" id="vibeTitle">新的循环，新的希望</p><p class="vibe-copy" id="vibeCopy">每记录一包，就距离下一次 500 包保底更近一步。</p><div class="insight-line"><span>当前循环</span><strong>见上方进度</strong></div><div class="insight-line"><span>记录方式</span><strong>手动累计</strong></div></aside>
-    </section>
-
-    <section class="glass-card history-panel" id="history-section"><div class="section-label"><span>ARCHIVE / 03</span><span>PACK COUNTER</span></div><div class="history-heading"><div><span class="kicker">OPENING HISTORY</span><h2>开箱记录</h2></div><span class="history-note">只保存日期与数量</span></div><div id="emptyState" class="empty-state"><div class="empty-glyph">◇</div><h3>档案还是空的</h3><p>记录第一次开箱，开始你的 500 包计数。</p><button class="outline-button" id="emptyCta" type="button">开始记录 →</button></div><div id="recordsList" class="records-list"></div></section>
-    <footer class="site-footer apex-footer"><span>ererethka の 宝藏之地 · APEX ARCHIVE</span><span>Inspired by <a href="https://github.com/heiehiehi/XinghuisamaBlogs" target="_blank" rel="noopener">XHBlogs</a> · CC BY-NC 4.0</span></footer>
+    <div class="apex-section-line"><span>02 / RECORD MANAGEMENT <b>记录管理</b></span><span>PRIVATE COLLECTION <i aria-hidden="true">■</i></span></div>
+    <div class="apex-workspace">
+      <section class="entry-panel apex-surface" id="recordPanel" aria-labelledby="entryTitle"><div class="entry-heading"><h2 id="entryTitle">添加记录</h2><span class="entry-plus" aria-hidden="true">＋</span></div><p class="entry-description">NEW ENTRY / 录入本次开启数量</p><form id="recordForm"><div class="entry-field"><div class="field-label"><label for="date">开箱日期</label><button type="button" class="today-button" id="todayButton">今天</button></div><input id="date" type="date" required></div><div class="entry-field"><label for="packs">开启数量</label><div class="pack-stepper"><button type="button" data-pack-step="-1" aria-label="减少一包">−</button><input id="packs" type="number" min="1" max="9999" step="1" value="1" inputmode="numeric" required aria-describedby="packHelp"><span aria-hidden="true">包</span><button type="button" data-pack-step="1" aria-label="增加一包">＋</button></div><div class="pack-presets" aria-label="快捷选择数量"><button type="button" data-pack-value="1" aria-pressed="true">1 包</button><button type="button" data-pack-value="5" aria-pressed="false">5 包</button><button type="button" data-pack-value="10" aria-pressed="false">10 包</button><button type="button" data-pack-value="20" aria-pressed="false">20 包</button></div><p id="packHelp" class="field-help">填写这次实际开启的数量。</p></div><button class="save-entry" type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>保存记录</button><p class="entry-footnote">先保存到本机，登录后自动同步。</p></form></section>
+      <section class="history-panel apex-surface" id="history-section" aria-labelledby="historyTitle"><div class="history-heading"><h2 id="historyTitle">开箱明细 <span id="historyCount">0</span></h2><span>最近的记录在前</span></div><div class="record-columns" id="recordColumns" hidden aria-hidden="true"><span>开箱日期</span><span>开启数量</span><span></span></div><div id="emptyState" class="empty-state"><div class="empty-package" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="m14 22 18-10 18 10v22L32 54 14 44V22Zm0 0 18 10 18-10M32 32v22M23 17l18 10"/></svg></div><h3>档案尚无记录</h3><p>录入开箱日期与数量，开始追踪循环。</p><button class="empty-start" id="emptyCta" type="button">建立第一笔记录 <span aria-hidden="true">↗</span></button></div><ol id="recordsList" class="records-list" aria-label="开箱记录列表"></ol><div class="history-bottom"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 7v5c0 5 8 9 8 9s8-4 8-9V7l-8-4Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><span>私人记录，仅自己可见</span></div></section>
+    </div>
+    <details class="calculation-note"><summary>计算说明 / 500 包循环</summary><p>每累计开启 500 包进入下一轮，当前进度为累计数量除以 500 的余数。这里只记录数量，不根据实际掉落重置循环；进度仅供记账参考。</p></details>
+    <footer class="apex-footer"><a href="../index.html">← 返回个人档案</a><span>ERE / SUPPLY ARCHIVE <b aria-hidden="true">////</b> APEX LEGENDS</span></footer>
   </main>
-
   <div class="toast" id="toast" role="status"></div>
-  <script src="../apex-auth.js?v=20260910"></script>
-  <script src="../app.js?v=20260910-3"></script>
+  <script src="../apex-auth.js?v=20261016-archive"></script>
+  <script src="../app.js?v=20261016-archive"></script>
 </body>
 </html>

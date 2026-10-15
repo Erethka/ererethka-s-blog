@@ -8,18 +8,7 @@ const body = document.body;
 const state = {
   records: [],
   remoteSha: null,
-  backgroundIndex: 0,
-  backgroundTimer: null,
-  musicPlaying: false,
 };
-
-// These are the three reference-site background images. They are the only
-// rotating page backgrounds; local artwork is kept for content cards only.
-const REFERENCE_BACKGROUNDS = [
-  "https://bu.dusays.com/2026/03/24/69c1e38b4c370.jpg",
-  "https://bu.dusays.com/2026/03/24/69c26fe4acdb5.jpg",
-  "https://bu.dusays.com/2026/03/24/69c26fe4d9486.jpg",
-];
 
 function toast(message) {
   const el = $("toast");
@@ -33,31 +22,18 @@ function toast(message) {
 function setTheme(theme, notify = false) {
   const mode = theme === "light" ? "light" : "dark";
   root.dataset.theme = mode;
-  localStorage.setItem(THEME_KEY, mode);
+  try { localStorage.setItem(THEME_KEY, mode); } catch { /* Theme still works when storage is unavailable. */ }
+  const themeColor = mode === "dark" ? "#171b1d" : "#e8ece7";
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor);
   const dark = mode === "dark";
   if ($("themeIcon")) $("themeIcon").textContent = dark ? "✦" : "☼";
   if ($("themeLabel")) $("themeLabel").textContent = dark ? "夜间" : "日间";
-  if ($("themeCardTitle")) $("themeCardTitle").textContent = dark ? "日间模式" : "夜间模式";
-  if ($("themeCardCopy")) $("themeCardCopy").textContent = dark ? "落樱漫舞的清晨" : "流萤飞舞的深空";
-  if ($("themeOrb")) $("themeOrb").textContent = dark ? "✿" : "✦";
-  renderBackgrounds();
+  $("themeButton")?.setAttribute("aria-label", dark ? "切换日间主题" : "切换夜间主题");
+  $("themeCard")?.setAttribute("aria-label", dark ? "切换日间主题" : "切换夜间主题");
+  if ($("themeCardTitle")) $("themeCardTitle").textContent = dark ? "浅色模式" : "深色模式";
+  if ($("themeCardCopy")) $("themeCardCopy").textContent = dark ? "切换到纸色界面" : "切换到深色界面";
+  if ($("themeOrb")) $("themeOrb").textContent = dark ? "☼" : "☾";
   if (notify) toast(dark ? "已切换到夜间模式" : "已切换到日间模式");
-}
-
-function renderBackgrounds() {
-  const holder = $("backgroundSlides");
-  if (!holder) return;
-  clearInterval(state.backgroundTimer);
-  holder.innerHTML = REFERENCE_BACKGROUNDS.map((src, index) =>
-    `<div class="ambient-slide${index === state.backgroundIndex % REFERENCE_BACKGROUNDS.length ? " active" : ""}" style="background-image:url('${src}')"></div>`
-  ).join("");
-  const slides = [...holder.children];
-  state.backgroundTimer = setInterval(() => {
-    if (slides.length < 2) return;
-    slides[state.backgroundIndex % slides.length]?.classList.remove("active");
-    state.backgroundIndex = (state.backgroundIndex + 1) % slides.length;
-    slides[state.backgroundIndex]?.classList.add("active");
-  }, 10000);
 }
 
 function initTheme() {
@@ -75,25 +51,40 @@ function initMobileNav() {
   button.addEventListener("click", () => {
     const open = links.classList.toggle("open");
     button.setAttribute("aria-expanded", String(open));
+    button.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
     button.textContent = open ? "×" : "☰";
   });
   links.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => {
     links.classList.remove("open");
     button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-label", "打开导航");
     button.textContent = "☰";
   }));
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !links.classList.contains("open")) return;
+    links.classList.remove("open");
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-label", "打开导航");
+    button.textContent = "☰";
+    button.focus();
+  });
 }
 
 function currentNav() {
   if (body?.dataset.route === "apex") return "apex";
-  if (body?.dataset.route === "dev") return "dev";
+  if (["dev","reader"].includes(body?.dataset.route)) return "dev";
   const hash = location.hash.replace(/^#/, "");
   return ["projects", "timeline", "photowall", "music", "about"].includes(hash) ? hash : "home";
 }
 
 function updateNav() {
   const active = currentNav();
-  document.querySelectorAll("[data-nav]").forEach((link) => link.classList.toggle("active", link.dataset.nav === active));
+  document.querySelectorAll("[data-nav]").forEach((link) => {
+    const selected = link.dataset.nav === active;
+    link.classList.toggle("active", selected);
+    if (selected) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
 }
 
 function initNav() {
@@ -112,35 +103,40 @@ function initCopyButtons() {
   }));
 }
 
-function initMusicPreview() {
-  const button = $("musicPlay");
-  if (!button) return;
-  button.addEventListener("click", () => {
-    state.musicPlaying = !state.musicPlaying;
-    button.textContent = state.musicPlaying ? "Ⅱ" : "▶";
-    $("musicLine").textContent = state.musicPlaying ? "正在播放：给今天的背景音乐。" : "让旋律替你保存此刻的心情。";
-    $("musicPreview")?.classList.toggle("is-playing", state.musicPlaying);
-  });
-}
-
 function initSearch() {
   const input = $("siteSearch");
   const results = $("searchResults");
   if (!input || !results) return;
   const entries = [
     { title: "Apex 开箱记录", detail: "500 包保底循环 / Apex Legends", href: "apex/index.html" },
-    { title: "个人博客迁移", detail: "XHBlogs 玻璃拟态页面骨架", href: "#projects" },
-    { title: "照片墙", detail: "把路过的风景留在这里", href: "#photowall" },
-    { title: "关于这个空间", detail: "个人数字花园 / About", href: "#about" },
+    { title: "技术档案", detail: "技术记录 / 开发笔记 / Markdown / 实验与问题解法", href: "dev/index.html" },
+    { title: "档案索引", detail: "项目 / 技术记录 / 照片墙 / 游戏", href: "#projects" },
+    { title: "照片墙", detail: "影像档案 / 相册 / 雾与火 / 等一班车 / 游戏时刻 / 夜航", href: "photowall/index.html" },
+    { title: "音乐角落", detail: "日常旋律 / 网易云音乐", href: "#music" },
+    { title: "关于这个档案", detail: "个人记录 / About", href: "#about" },
   ];
   const render = () => {
     const query = input.value.trim().toLowerCase();
     if (!query) { results.hidden = true; results.innerHTML = ""; return; }
-    const matches = entries.filter((entry) => `${entry.title} ${entry.detail}`.toLowerCase().includes(query));
+    const titleRank = (entry) => entry.title.toLowerCase() === query ? 2 : Number(entry.title.toLowerCase().includes(query));
+    const matches = entries
+      .filter((entry) => `${entry.title} ${entry.detail}`.toLowerCase().includes(query))
+      .sort((a, b) => titleRank(b) - titleRank(a));
     results.innerHTML = matches.length ? matches.map((entry) => `<a class="search-result" href="${entry.href}"><strong>${escapeHtml(entry.title)}</strong><small>${escapeHtml(entry.detail)}</small></a>`).join("") : `<div class="search-result"><strong>没有找到相关内容</strong><small>试试搜索 Apex、项目或照片墙</small></div>`;
     results.hidden = false;
   };
   input.addEventListener("input", render);
+  input.addEventListener("focus", render);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" && !results.hidden) {
+      const first = results.querySelector("a");
+      if (first) { event.preventDefault(); first.focus(); }
+    }
+    if (event.key === "Enter" && !results.hidden) results.querySelector("a")?.click();
+  });
+  results.addEventListener("click", (event) => {
+    if (event.target.closest("a")) { results.hidden = true; input.value = ""; }
+  });
   document.addEventListener("click", (event) => { if (!event.target.closest(".search-wrap")) results.hidden = true; });
   document.addEventListener("keydown", (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); input.focus(); }
@@ -154,7 +150,7 @@ function initClock() {
   if (!clock && !uptime) return;
   const update = () => {
     const now = new Date();
-    if (clock) clock.textContent = now.toLocaleTimeString("en-US", { hour12: false });
+    if (clock) clock.textContent = now.toLocaleTimeString("en-GB", { hour12: false, timeZone: "Asia/Shanghai" });
     if (uptime) {
       const days = Math.max(0, Math.floor((now.getTime() - START_DATE) / 86400000));
       uptime.textContent = `${days} 天`;
@@ -194,23 +190,19 @@ function cycleStats() {
   return { total, progress, toPity: progress === 0 && total > 0 ? 500 : 500 - progress };
 }
 
-function updateHomePreview() {
-  if ($("homePostCount")) $("homePostCount").textContent = "0";
-  if ($("homeChatterCount")) $("homeChatterCount").textContent = "0";
-  if ($("homePhotoCount")) $("homePhotoCount").textContent = "5";
-}
-
 function updateApexStats() {
   const stats = cycleStats();
   if ($("totalPacks")) $("totalPacks").textContent = stats.total.toLocaleString("en-US");
-  if ($("pityProgress")) $("pityProgress").textContent = `${stats.progress} / 500`;
+  if ($("pityProgress")) $("pityProgress").textContent = String(stats.progress);
   if ($("packsToPity")) $("packsToPity").textContent = String(stats.toPity);
-  if ($("cycleText")) $("cycleText").textContent = `${stats.progress} / 500 packs`;
-  if ($("vibeFace")) {
-    $("vibeFace").textContent = !stats.total ? "^_^" : stats.progress < 350 ? "o_o" : "^w^";
-    $("vibeTitle").textContent = !stats.total ? "新的循环，新的希望" : stats.progress < 350 ? "距离红光还早" : "保底开始升温";
-    $("vibeCopy").textContent = !stats.total ? "每记录一包，就距离下一次 500 包保底更近一步。" : `${stats.toPity} 包后进入下一次 500 包保底循环。`;
-  }
+  if ($("cycleNumber")) $("cycleNumber").textContent = `第 ${Math.floor(stats.total / 500) + 1} 轮`;
+  if ($("recordCount")) $("recordCount").textContent = state.records.length.toLocaleString("en-US");
+  if ($("historyCount")) $("historyCount").textContent = String(state.records.length);
+  if ($("cycleFill")) $("cycleFill").style.width = `${stats.progress / 5}%`;
+  $("cycleProgress")?.setAttribute("aria-valuenow", String(stats.progress));
+  $("cycleProgress")?.setAttribute("aria-valuetext", `${stats.progress} 包，共 500 包`);
+  const lastDate = state.records.reduce((latest, record) => record.date > latest ? record.date : latest, "");
+  if ($("lastRecordedDate")) $("lastRecordedDate").textContent = lastDate ? dateText(lastDate) : "暂无记录";
 }
 
 function renderRecords() {
@@ -218,8 +210,9 @@ function renderRecords() {
   const empty = $("emptyState");
   if (!holder || !empty) return;
   const records = [...state.records].sort((a, b) => new Date(b.date) - new Date(a.date) || (b.createdAt || 0) - (a.createdAt || 0));
-  empty.style.display = records.length ? "none" : "block";
-  holder.innerHTML = records.map((record) => `<article class="record-card record-card-normal"><div class="record-badge">◇</div><div class="record-main"><h3>Pack cycle logged</h3><p>${dateText(record.date)} / <span>${record.packs} packs</span></p></div><div class="record-side"><strong>+${record.packs}</strong><small>PACKS</small></div><button class="record-delete" type="button" data-delete="${escapeHtml(record.id)}" aria-label="删除记录">×</button></article>`).join("");
+  empty.style.display = records.length ? "none" : "flex";
+  if ($("recordColumns")) $("recordColumns").hidden = !records.length;
+  holder.innerHTML = records.map((record) => `<li class="record-row"><div class="record-date"><time datetime="${escapeHtml(record.date)}">${escapeHtml(dateText(record.date))}</time><small>手动记录</small></div><span class="record-quantity">${record.packs.toLocaleString("en-US")}<small>包</small></span><button class="record-delete" type="button" data-delete="${escapeHtml(record.id)}" aria-label="删除 ${escapeHtml(dateText(record.date))} 的 ${record.packs} 包记录"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6m4-6v6"/></svg></button></li>`).join("");
 }
 
 function renderApex() { updateApexStats(); renderRecords(); }
@@ -251,7 +244,12 @@ function setSync(label, mode = "") {
   $("syncLabel") && ($("syncLabel").textContent = label);
 }
 
-function updateSyncPill(connected = false) { setSync(connected ? "Private sync connected" : "等待身份验证", connected ? "connected" : ""); }
+function updateSyncPill(connected = false) { setSync(connected ? "已同步" : "等待登录", connected ? "connected" : ""); }
+
+function syncErrorMessage(error) {
+  const message = error?.message || "同步暂未完成，请稍后重试。";
+  return /failed to fetch|networkerror|load failed/i.test(message) ? "暂时无法连接同步服务，请稍后重试。" : message;
+}
 
 async function saveGithub(show = true) {
   try {
@@ -266,8 +264,8 @@ async function saveGithub(show = true) {
     if (show) toast("已保存到 GitHub 私库");
     return true;
   } catch (error) {
-    updateSyncPill(false);
-    if (show) toast(error.message || "私有数据保存失败");
+    setSync(/登录/.test(error.message) ? "需要登录" : "同步未完成");
+    if (show) toast(syncErrorMessage(error));
     throw error;
   }
 }
@@ -285,8 +283,8 @@ async function loadGithub() {
     }
     updateSyncPill(Boolean(remote.sha));
   } catch (error) {
-    updateSyncPill(false);
-    toast(error.message || "私有数据拉取失败");
+    setSync(/登录/.test(error.message) ? "需要登录" : "同步未完成");
+    toast(syncErrorMessage(error));
   }
 }
 
@@ -301,7 +299,21 @@ function initApex() {
   readLocal();
   renderApex();
   updateSyncPill(false);
-  $("date").valueAsDate = new Date();
+  const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  $("date").value = today();
+  const syncPackControls = () => {
+    const value = Number($("packs").value);
+    document.querySelectorAll("[data-pack-value]").forEach((button) => button.setAttribute("aria-pressed", String(Number(button.dataset.packValue) === value)));
+    document.querySelectorAll("[data-pack-step]").forEach((button) => { button.disabled = Number(button.dataset.packStep) < 0 ? value <= 1 : value >= 9999; });
+  };
+  $("todayButton")?.addEventListener("click", () => { $("date").value = today(); });
+  $("packs").addEventListener("input", syncPackControls);
+  document.querySelectorAll("[data-pack-value], [data-pack-step]").forEach((button) => button.addEventListener("click", () => {
+    const value = button.dataset.packValue ? Number(button.dataset.packValue) : (Number($("packs").value) || 1) + Number(button.dataset.packStep);
+    $("packs").value = String(Math.max(1, Math.min(9999, value)));
+    syncPackControls();
+  }));
+  syncPackControls();
   $("recordForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const record = normalizeRecord({ id: uid(), date: $("date").value, packs: Number($("packs").value), createdAt: Date.now() });
@@ -310,12 +322,16 @@ function initApex() {
     renderApex();
     scheduleGithubSave();
     event.target.reset();
-    $("date").valueAsDate = new Date();
+    $("date").value = today();
     $("packs").value = 1;
+    syncPackControls();
     toast("已保存本地，正在同步私有仓库…");
-    $("history-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (window.matchMedia("(max-width: 720px)").matches) $("history-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
-  $("emptyCta")?.addEventListener("click", () => ($("recordPanel") || $("recordForm"))?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  $("emptyCta")?.addEventListener("click", () => {
+    $("recordPanel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    $("packs").focus({ preventScroll: true });
+  });
   $("recordsList")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-delete]");
     if (!button) return;
@@ -333,8 +349,6 @@ initTheme();
 initNav();
 initMobileNav();
 initCopyButtons();
-initMusicPreview();
 initSearch();
 initClock();
-updateHomePreview();
 initApex();

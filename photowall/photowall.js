@@ -4,7 +4,7 @@
     {
       title: "雾与火",
       date: "2026 · SPRING",
-      description: "收集明亮、热烈，也带一点雾气的瞬间。",
+      description: "明亮的色彩，春日的收藏。",
       photos: [
         { src: "../assets/backgrounds/light/hu-tao.jpg", caption: "01 · 雾与火" },
         { src: "../assets/backgrounds/light/anime-spring.jpg", caption: "02 · 春日漫游" }
@@ -13,7 +13,7 @@
     {
       title: "等一班车",
       date: "2026 · DAILY",
-      description: "路过车站、街角与黄昏时，顺手留下的画面。",
+      description: "车站、街角与途中的片刻。",
       photos: [
         { src: "../assets/backgrounds/light/station-girl.jpg", caption: "01 · 等一班车" },
         { src: "../assets/backgrounds/light/snowy-profile.jpg", caption: "02 · 雪落之后" }
@@ -22,7 +22,7 @@
     {
       title: "游戏时刻",
       date: "2026 · GAME",
-      description: "游戏、角色与那些值得截图保存的瞬间。",
+      description: "角色与战场，游戏里的记忆。",
       photos: [
         { src: "../assets/backgrounds/light/apex-champions.jpg", caption: "01 · Apex时刻" },
         { src: "../assets/backgrounds/dark/kaisel.jpg", caption: "02 · 夜航" }
@@ -31,7 +31,7 @@
     {
       title: "夜航",
       date: "ARCHIVE · 2026",
-      description: "把深夜里偶然遇见的光，单独留一份档案。",
+      description: "夜色中的光与安静画面。",
       photos: [
         { src: "../assets/backgrounds/dark/kaisel.jpg", caption: "01 · 夜航" },
         { src: "../assets/backgrounds/dark/solo-leveling.jpg", caption: "02 · 深夜记录" },
@@ -52,13 +52,15 @@
   const lightboxCounter = $("lightboxCounter");
   let activeAlbum = null;
   let activePhoto = 0;
+  const returnFocus = new WeakMap();
 
   function applyTheme(theme) {
     const next = theme === "light" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
-    localStorage.setItem(THEME_KEY, next);
+    try { localStorage.setItem(THEME_KEY, next); } catch {}
     $("themeLabel").textContent = next === "light" ? "夜间" : "日间";
-    $("themeIcon").textContent = next === "light" ? "☾" : "✦";
+    $("themeIcon").textContent = "◐";
+    document.querySelector('meta[name="theme-color"]').content = next === "light" ? "#e8ece7" : "#171b1d";
     $("themeButton").setAttribute("aria-label", next === "light" ? "切换夜间主题" : "切换日间主题");
   }
 
@@ -79,16 +81,19 @@
     grid.innerHTML = visible.map((album) => {
       const albumIndex = albums.indexOf(album);
       const preview = album.photos.slice(0, 3);
-      return `<article class="album-card" data-album="${albumIndex}" tabindex="0" role="button" aria-label="打开相册 ${escapeHtml(album.title)}">
-        <div class="album-preview">${preview.map((photo) => `<img src="${photo.src}" alt="${escapeHtml(photo.caption)}" loading="lazy">`).join("")}</div>
+      const number = String(albumIndex + 1).padStart(2, "0");
+      return `<article class="album-card" data-album="${albumIndex}" tabindex="0" role="button" aria-label="打开相册 ${escapeHtml(album.title)}，${album.photos.length} 张照片">
+        <div class="album-card-top"><span><i aria-hidden="true">■</i>COLLECTION / ${number}</span><span>${escapeHtml(album.date)}</span></div>
+        <div class="album-preview${preview.length > 2 ? " has-three" : ""}" aria-hidden="true">${preview.map((photo) => `<img src="${photo.src}" alt="" loading="lazy">`).join("")}</div>
         <div class="album-info">
-          <div><span class="album-date">${escapeHtml(album.date)}</span><h3>${escapeHtml(album.title)}</h3><p>${escapeHtml(album.description)}</p></div>
-          <span class="album-count">${album.photos.length} 张照片 · OPEN</span>
+          <div><h3>${escapeHtml(album.title)}</h3><p>${escapeHtml(album.description)}</p></div><span class="album-open" aria-hidden="true">↗</span>
         </div>
+        <div class="album-card-bottom"><span>${String(album.photos.length).padStart(2, "0")} 张影像</span><span>VIEW COLLECTION ↗</span></div>
       </article>`;
     }).join("");
 
     empty.hidden = visible.length !== 0;
+    $("visibleAlbumCount").textContent = String(visible.length).padStart(2, "0");
     grid.querySelectorAll(".album-card").forEach((card) => {
       const open = () => openAlbum(Number(card.dataset.album));
       card.addEventListener("click", open);
@@ -104,7 +109,7 @@
     $("albumTitle").textContent = album.title;
     $("albumDate").textContent = album.date;
     $("albumDescription").textContent = album.description;
-    albumPhotoGrid.innerHTML = album.photos.map((photo, photoIndex) => `<figure class="album-photo" data-photo="${photoIndex}"><img src="${photo.src}" alt="${escapeHtml(photo.caption)}" loading="lazy"><figcaption>${escapeHtml(photo.caption)}</figcaption></figure>`).join("");
+    albumPhotoGrid.innerHTML = album.photos.map((photo, photoIndex) => `<button class="album-photo" type="button" data-photo="${photoIndex}" aria-label="查看照片 ${escapeHtml(photo.caption)}"><img src="${photo.src}" alt="" loading="lazy"><span>${escapeHtml(photo.caption)}</span></button>`).join("");
     albumPhotoGrid.querySelectorAll(".album-photo").forEach((figure) => figure.addEventListener("click", () => openLightbox(Number(figure.dataset.photo))));
     setOpen(albumModal, true);
   }
@@ -136,9 +141,15 @@
   }
 
   function setOpen(element, open) {
+    if (open) returnFocus.set(element, document.activeElement);
     element.classList.toggle("open", open);
     element.setAttribute("aria-hidden", String(!open));
     document.body.classList.toggle("modal-open", albumModal.classList.contains("open") || lightbox.classList.contains("open"));
+    $("photoMain").inert = albumModal.classList.contains("open") || lightbox.classList.contains("open");
+    document.querySelector(".photo-nav").inert = $("photoMain").inert;
+    albumModal.inert = lightbox.classList.contains("open");
+    if (open) element.querySelector("button")?.focus();
+    else returnFocus.get(element)?.focus();
   }
 
   function escapeHtml(value) {
@@ -151,11 +162,13 @@
     button.addEventListener("click", () => {
       const open = links.classList.toggle("open");
       button.setAttribute("aria-expanded", String(open));
+      button.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
       button.textContent = open ? "×" : "☰";
     });
     links.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => {
       links.classList.remove("open");
       button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-label", "打开导航");
       button.textContent = "☰";
     }));
   }
@@ -168,6 +181,14 @@
     albumModal.addEventListener("click", (event) => { if (event.target === albumModal) closeAlbum(); });
     lightbox.addEventListener("click", (event) => { if (event.target === lightbox) setOpen(lightbox, false); });
     document.addEventListener("keydown", (event) => {
+      const currentDialog = lightbox.classList.contains("open") ? lightbox : albumModal.classList.contains("open") ? albumModal : null;
+      if (currentDialog && event.key === "Tab") {
+        const focusable = [...currentDialog.querySelectorAll("button, [tabindex='0']")];
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
       if (lightbox.classList.contains("open")) {
         if (event.key === "Escape") setOpen(lightbox, false);
         else if (event.key === "ArrowLeft") stepPhoto(-1);
@@ -179,6 +200,7 @@
   }
 
   $("albumCount").textContent = `${albums.length} 个相册`;
+  $("collectionTotal").textContent = String(albums.length).padStart(2, "0");
   $("photoCount").textContent = `${albums.reduce((sum, album) => sum + album.photos.length, 0)} 张照片`;
   search.addEventListener("input", () => renderAlbums(search.value));
   initTheme();

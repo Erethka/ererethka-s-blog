@@ -65,3 +65,7 @@ $RECYCLE.BIN/
 ### Python
 __pycache__/
 *.py[cod]
+
+# Local browser verification artifacts
+.playwright-cli/
+output/playwright/
