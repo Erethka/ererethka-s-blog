@@ -4,14 +4,13 @@
 ::view-transition-new(root){animation:archive-page-in .48s cubic-bezier(.22,.75,.2,1) both;}
 @keyframes archive-page-out{to{opacity:0;transform:translateY(-14px);}}
 @keyframes archive-page-in{from{clip-path:inset(0 0 100% 0);transform:translateY(22px);}to{clip-path:inset(0);transform:translateY(0);}}
-.motion-ready [data-reveal]{transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1),clip-path 1s cubic-bezier(.2,.7,.2,1);transition-delay:var(--reveal-delay,0ms);}
-.motion-ready [data-reveal="rise"]:not(.is-revealed){opacity:0;transform:translateY(30px);}
-.motion-ready [data-reveal="type"]:not(.is-revealed){opacity:.2;transform:translateY(17px);clip-path:inset(0 0 100% 0);}
-.motion-ready [data-reveal="slice"]:not(.is-revealed){clip-path:inset(0 100% 0 0);transform:translateX(-18px);}
-.motion-ready [data-reveal].is-revealed{opacity:1;transform:translate(0);}
-.motion-ready :is([data-reveal="slice"],[data-reveal="type"]).is-revealed{clip-path:inset(0);}
+/* Progress is tied to scroll position, with an entry, a hold and an exit. */
+.motion-ready [data-reveal]{transition:none;opacity:var(--reveal-opacity,1);}
+.motion-ready [data-reveal="rise"]{transform:translateY(calc((1 - var(--reveal-enter,1))*30px - var(--reveal-exit,0)*22px));}
+.motion-ready [data-reveal="type"]{transform:translateY(calc((1 - var(--reveal-enter,1))*17px - var(--reveal-exit,0)*12px));clip-path:inset(calc(var(--reveal-exit,0)*100%) 0 calc((1 - var(--reveal-enter,1))*100%) 0);}
+.motion-ready [data-reveal="slice"]{transform:translateX(calc((1 - var(--reveal-enter,1))*-18px + var(--reveal-exit,0)*18px));clip-path:inset(0 calc((1 - var(--reveal-enter,1))*100%) 0 calc(var(--reveal-exit,0)*100%));}
 .motion-ready [data-reveal]:focus-visible{clip-path:none!important;}
-.motion-ready [data-reveal]:focus-within{opacity:1;transform:none;clip-path:none;transition-duration:.01ms;}
+.motion-ready [data-reveal]:focus-within{opacity:1;transform:none;clip-path:none;}
 .home-heading{position:relative;z-index:4;}
 .site-scroll-meter{position:fixed;left:0;right:0;top:76px;height:2px;z-index:55;pointer-events:none;transform:scaleX(var(--page-progress,0));transform-origin:left;background:var(--ark-accent);}
 .site-nav.is-scrolled,.photo-nav.is-scrolled{box-shadow:0 4px 0 color-mix(in srgb,var(--ark-bg) 80%,transparent);}
@@ -25,11 +24,10 @@
 .motion-ready .garden-cover::before{transform:translateX(calc(var(--scene-travel,0px) * -.7));}
 .motion-ready .cover-star{transform:rotate(calc(var(--scene-progress,.5) * 100deg - 50deg));}
 .motion-ready .section-heading{position:relative;isolation:isolate;border-top-color:transparent;}
-.motion-ready .section-heading::before{content:"";position:absolute;left:0;right:0;top:-2px;height:2px;background:var(--ark-text);transform:scaleX(0);transform-origin:left;transition:transform 1s cubic-bezier(.2,.7,.2,1);}
-.motion-ready .section-heading.is-revealed::before{transform:scaleX(1);}
+.motion-ready .section-heading::before{content:"";position:absolute;left:0;right:0;top:-2px;height:2px;background:var(--ark-text);transform:scaleX(calc(var(--reveal-enter,1)*(1 - var(--reveal-exit,0))));transform-origin:left;}
 .destination-card .card-arrow,.photo-caption>span:last-child,.cover-link>span{display:inline-block;transition:transform .25s ease;}.destination-card:hover .card-arrow,.photo-tile:hover .photo-caption>span:last-child,.cover-link:hover>span{transform:translate(3px,-3px);}
 @media(max-width:1400px){.scroll-compass{display:none;}}
-@media(max-width:720px){.site-scroll-meter{top:66px;}.motion-ready [data-reveal="rise"]:not(.is-revealed){transform:translateY(18px);}.motion-ready [data-reveal]{transition-duration:.55s;}.motion-ready .garden-cover>img{transform:translateY(calc(var(--scene-travel,0px) * .18)) scale(1.08);}}
+@media(max-width:720px){.site-scroll-meter{top:66px;}.motion-ready [data-reveal="slice"]{transform:translateX(calc((1 - var(--reveal-enter,1))*-12px + var(--reveal-exit,0)*12px));}.motion-ready [data-reveal="rise"]{transform:translateY(calc((1 - var(--reveal-enter,1))*18px - var(--reveal-exit,0)*14px));}.motion-ready .garden-cover>img{transform:translateY(calc(var(--scene-travel,0px) * .18)) scale(1.08);}}
 @media(prefers-reduced-motion:reduce){
   @view-transition{navigation:none;}
   ::view-transition-old(root),::view-transition-new(root){animation:none!important;}

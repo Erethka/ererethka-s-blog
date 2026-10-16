@@ -15,7 +15,7 @@
 
 全站公共颜色和导航样式在 `site-polish.css`，首页样式在 `styles-polish.css`；各子页样式位于对应目录。首页保留 `#home`、`#projects`、`#timeline`、`#photowall`、`#music` 与 `#about` 锚点。
 
-`motion.css` 与 `motion.js` 管理分区遮罩入场、细线展开、滚动图形位移、章节定位和滚动进度。滚动沿用浏览器原生行为；滚动帧通过 `requestAnimationFrame` 合并，并先读取布局再更新样式。`navigation-motion.js` 在 head 中注册原生跨文档过渡事件，兼容快速切换和取消导航。支持 View Transitions 的浏览器提供页面切换过渡，其他浏览器正常导航。
+`motion.css` 与 `motion.js` 管理分区遮罩、细线展开、滚动图形位移、章节定位和滚动进度。动画帧直接映射滚动位置：下滚展开、上滚收回，来回滚动会返回相同进度，不保留一次性播放标记。滚动沿用浏览器原生行为；滚动帧通过 `requestAnimationFrame` 合并，并先读取布局再更新样式。`navigation-motion.js` 在 head 中注册原生跨文档过渡事件，兼容快速切换和取消导航。支持 View Transitions 的浏览器提供页面切换过渡，其他浏览器正常导航。
 
 启用系统“减少动态效果”时关闭入场与图形位移；禁用 JavaScript 时仍完整显示页面内容。技术编辑器正文与输入区不参加滚动位移动画。
 

@@ -5,8 +5,8 @@
   const sceneNodes=[...document.querySelectorAll('[data-scroll-scene]')];
   const nav=document.querySelector('.site-nav,.photo-nav');
   const main=document.querySelector('main');
-  let observer,frame=0,enabled=false;
-  const reveals=new Set();
+  let frame=0,enabled=false;
+  const reveals=new Map();
   const clamp=value=>Math.min(1,Math.max(0,value));
   const home=document.body.dataset.route==='home';
   const explore=document.body.dataset.route==='explore';
@@ -28,16 +28,19 @@
   chapterLinks=[...document.querySelectorAll('[data-chapter]')];
   const chapters=chapterLinks.map(link=>({link,element:document.getElementById(link.dataset.chapter)})).filter(x=>x.element);
   function register(){
-    if(selectors)document.querySelectorAll(selectors).forEach((element,index)=>{
+    if(selectors)document.querySelectorAll(selectors).forEach(element=>{
       if(!element.hasAttribute('data-reveal'))element.dataset.reveal=element.matches('.photo-tile,.album-card')?'slice':'rise';
-      element.style.setProperty('--reveal-delay',`${index%3*65}ms`);
     });
-    document.querySelectorAll('[data-reveal]').forEach(element=>{
+    document.querySelectorAll('[data-reveal]').forEach((element,index)=>{
       if(reveals.has(element))return;
-      reveals.add(element);
-      if(!enabled||element.getBoundingClientRect().bottom<0)element.classList.add('is-revealed');
-      else observer?.observe(element);
+      reveals.set(element,{offset:(index%3)*14});
     });
+  }
+  // offsetTop follows layout, so our own transforms cannot feed back into progress.
+  function layoutTop(element){
+    let top=0,node=element;
+    while(node){top+=node.offsetTop;node=node.offsetParent;}
+    return top;
   }
   function update(){
     frame=0;
@@ -46,12 +49,19 @@
     const progress=height>0?clamp(y/height):0;
     // Read geometry before writing styles so all scenes share one layout pass.
     const scenes=enabled?sceneNodes.map(element=>({element,rect:element.getBoundingClientRect()})):[];
-    // A fully clipped mask has no intersection area; use its layout box too.
-    const entering=enabled?[...reveals].filter(element=>!element.classList.contains('is-revealed')).map(element=>({element,rect:element.getBoundingClientRect()})):[];
+    const targets=enabled?[...reveals].map(([element,state])=>({element,top:layoutTop(element)-y,height:element.offsetHeight,offset:state.offset})):[];
     const positions=chapters.map(item=>({...item,top:item.element.getBoundingClientRect().top}));
     let active=positions[0];positions.forEach(item=>{if(item.top<=vh*.45)active=item;});
     root.style.setProperty('--page-progress',String(progress));
-    entering.forEach(({element,rect})=>{if(rect.top<vh-24&&rect.bottom>0){element.classList.add('is-revealed');observer?.unobserve(element);}});
+    const header=innerWidth>720?90:78;
+    targets.forEach(({element,top,height,offset})=>{
+      // The same scroll coordinate always produces the same frame in either direction.
+      const enter=clamp((vh*.94-top-offset)/(vh*.42));
+      const exit=clamp((header+vh*.12-top-height)/(vh*.12));
+      element.style.setProperty('--reveal-enter',enter.toFixed(5));
+      element.style.setProperty('--reveal-exit',exit.toFixed(5));
+      element.style.setProperty('--reveal-opacity',Math.min(enter,1-exit).toFixed(5));
+    });
     nav?.classList.toggle('is-scrolled',y>36);
     scenes.forEach(({element,rect})=>{
       if(rect.bottom< -100||rect.top>vh+100)return;
@@ -68,24 +78,21 @@
   }
   function schedule(){if(!frame)frame=requestAnimationFrame(update);}
   function configure(){
-    observer?.disconnect();
-    enabled=!reduced.matches&&'IntersectionObserver' in window;
+    enabled=!reduced.matches;
     root.classList.toggle('motion-ready',enabled);
-    if(enabled){
-      observer=new IntersectionObserver(entries=>entries.forEach(entry=>{
-        if(entry.isIntersecting){entry.target.classList.add('is-revealed');observer.unobserve(entry.target);}
-      }),{threshold:.08,rootMargin:'0px 0px -24px 0px'});
-      reveals.forEach(element=>{if(!element.classList.contains('is-revealed'))observer.observe(element);});
-    }else{
-      reveals.forEach(element=>element.classList.add('is-revealed'));
+    if(!enabled){
+      reveals.forEach((state,element)=>{for(const key of ['--reveal-enter','--reveal-exit','--reveal-opacity'])element.style.removeProperty(key);});
       sceneNodes.forEach(element=>{element.style.removeProperty('--scene-progress');element.style.removeProperty('--scene-travel');});
     }
     register();schedule();
   }
   configure();
   // Register asynchronously loaded cards without animating the editor itself.
-  if(main&&selectors)new MutationObserver(()=>{reveals.forEach(element=>{if(!element.isConnected){observer?.unobserve(element);reveals.delete(element);}});register();schedule();}).observe(main,{childList:true,subtree:true});
-  document.addEventListener('focusin',event=>{const target=event.target.closest?.('[data-reveal]');if(target){target.classList.add('is-revealed');observer?.unobserve(target);}});
+  if(main&&selectors)new MutationObserver(()=>{reveals.forEach((state,element)=>{if(!element.isConnected)reveals.delete(element);});register();schedule();}).observe(main,{childList:true,subtree:true});
+  // Font swaps, loaded images and filtered content can change the scroll geometry.
+  if(main&&typeof ResizeObserver!=='undefined')new ResizeObserver(schedule).observe(main);
+  document.fonts?.addEventListener('loadingdone',schedule);
+  document.addEventListener('focusin',schedule);
   window.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);
   window.addEventListener('load',schedule,{once:true});window.addEventListener('pageshow',schedule);
   reduced.addEventListener('change',configure);
