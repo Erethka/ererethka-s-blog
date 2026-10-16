@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel>
+<title>ererethka の宝藏之地 · 站点更新</title><link>https://erethka.github.io/ererethka-s-blog/updates/</link><description>个人博客的公开更新日志，不包含私人技术文档或游戏记录。</description><language>zh-cn</language><lastBuildDate>Fri, 16 Oct 2026 12:14:34 +0800</lastBuildDate><atom:link href="https://erethka.github.io/ererethka-s-blog/feed.xml" rel="self" type="application/rss+xml"/>
+<item><title>让记录能被找到，也能被好好阅读</title><link>https://erethka.github.io/ererethka-s-blog/updates/#reading-tools</link><guid isPermaLink="true">https://erethka.github.io/ererethka-s-blog/updates/#reading-tools</guid><pubDate>Fri, 16 Oct 2026 12:14:34 +0800</pubDate><description>补齐最近记录、标签与时间归档、Markdown 阅读工具、相册链接、私人记录备份与本地音频试听。真实技术记录仍在登录后的私人档案中。</description></item>
+<item><title>全站档案式设计上线</title><link>https://erethka.github.io/ererethka-s-blog/updates/#archive-design</link><guid isPermaLink="true">https://erethka.github.io/ererethka-s-blog/updates/#archive-design</guid><pubDate>Fri, 16 Oct 2026 04:57:00 +0800</pubDate><description>首页、技术记录、阅读页、照片墙与 Apex 页面统一为受明日方舟平面设计启发的工业档案版式，适配日夜主题与移动端。</description></item>
+</channel></rss>

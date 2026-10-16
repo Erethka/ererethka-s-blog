@@ -1,92 +1,86 @@
+/* Shared session controls for the private archive. No credentials are persisted. */
 (() => {
-  const API_BASE = "https://ererethka-apex-auth.erethka.workers.dev";
-  const state = { authenticated: false, modal: null, message: "" };
-
-  function api(path) { return `${API_BASE.replace(/\/$/, "")}${path}`; }
-
-  // Apex 页面只通过 Worker 访问私有数据；浏览器不保存、不发送 GitHub Token。
-  window.apexAuthFetch = (path, init = {}) => originalFetch(api(path), {
-    ...init,
-    credentials: "include",
-    cache: "no-store",
-  });
-
-  const originalFetch = window.fetch.bind(window);
-
-  function showLogin(message = "") {
-    state.message = message;
-    if (!state.modal) buildModal();
-    state.modal.hidden = false;
-    state.modal.setAttribute("aria-hidden", "false");
-    const input = document.getElementById("apexAuthPassword");
-    if (input) setTimeout(() => input.focus(), 0);
-    const status = document.getElementById("apexAuthStatus");
-    if (status) status.textContent = message;
+  const API_BASE='https://ererethka-apex-auth.erethka.workers.dev';
+  const originalFetch=window.fetch.bind(window);
+  const state={authenticated:false,modal:null,returnFocus:null,inert:[],overflow:''};
+  let resolveReady;
+  const ready=new Promise(resolve=>resolveReady=resolve);
+  const api=path=>`${API_BASE}${path}`;
+  function announce(){
+    document.querySelectorAll('[data-auth-action]').forEach(button=>{button.textContent=state.authenticated?'退出登录':'登录档案';button.setAttribute('aria-label',button.textContent);});
+    window.dispatchEvent(new CustomEvent('blog:authchange',{detail:{authenticated:state.authenticated}}));
   }
-
-  function hideLogin() {
-    if (!state.modal) return;
-    state.modal.hidden = true;
-    state.modal.setAttribute("aria-hidden", "true");
+  function close(){
+    if(!state.modal||state.modal.hidden)return;
+    state.modal.hidden=true;state.modal.setAttribute('aria-hidden','true');
+    state.inert.forEach(([element,inert])=>element.inert=inert);state.inert=[];
+    document.body.style.overflow=state.overflow;state.returnFocus?.focus();
   }
-
-  function buildModal() {
-    const style = document.createElement("style");
-    style.textContent = `
-      #apexAuthModal{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;background:rgba(3,7,18,.62);backdrop-filter:blur(18px)}
-      #apexAuthModal[hidden]{display:none}
-      .apex-auth-card{width:min(430px,100%);padding:30px;border:1px solid rgba(255,255,255,.16);border-radius:26px;background:rgba(15,23,42,.84);box-shadow:0 30px 80px rgba(0,0,0,.4);color:#fff}
-      .apex-auth-kicker{font-size:11px;letter-spacing:.16em;opacity:.62}.apex-auth-card h2{margin:8px 0 10px;font-size:28px}.apex-auth-copy{margin:0 0 22px;line-height:1.7;opacity:.72;font-size:14px}
-      .apex-auth-card label{display:block;font-size:13px;font-weight:700}.apex-auth-card input{box-sizing:border-box;width:100%;margin-top:8px;padding:13px 14px;border-radius:13px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;outline:none}.apex-auth-card input:focus{border-color:rgba(255,255,255,.4)}
-      .apex-auth-actions{display:flex;gap:10px;margin-top:16px}.apex-auth-actions button{flex:1;padding:12px 14px;border-radius:13px;border:1px solid rgba(255,255,255,.16);cursor:pointer}.apex-auth-submit{background:#fff;color:#111827}.apex-auth-status{min-height:20px;margin:12px 0 0;font-size:12px;color:#fda4af}
-      .apex-auth-lock{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.08);font-size:20px}
-    `;
-    document.head.appendChild(style);
-    const modal = document.createElement("div");
-    modal.id = "apexAuthModal";
-    modal.hidden = true;
-    modal.setAttribute("aria-hidden", "true");
-    const apexPage = document.body.dataset.route === "apex";
-    const archivePage = ["dev", "reader"].includes(document.body.dataset.route);
-    modal.innerHTML = `<section class="apex-auth-card" role="dialog" aria-modal="true" aria-labelledby="apexAuthTitle"><div class="apex-auth-lock" aria-hidden="true">△</div><div class="apex-auth-kicker">${apexPage ? "Apex · 私人档案" : archivePage ? "ERE / PRIVATE ARCHIVE" : "私人档案"}</div><h2 id="apexAuthTitle">${apexPage ? "登录开箱记录" : archivePage ? "进入私人档案" : "确认身份"}</h2><p class="apex-auth-copy">${apexPage ? "输入博客密码，查看并同步你的开箱记录。" : archivePage ? "输入博客密码，继续阅读与整理你的技术记录。" : "输入博客密码，查看并同步你的私人记录。"}</p><form id="apexAuthForm"><label for="apexAuthPassword">登录密码<input id="apexAuthPassword" type="password" autocomplete="current-password" required placeholder="输入密码"></label><div class="apex-auth-actions"><button class="apex-auth-submit" type="submit">${apexPage ? "登录并同步" : archivePage ? "登录档案" : "验证并同步"}</button></div><p class="apex-auth-status" id="apexAuthStatus" role="status"></p></form></section>`;
-    document.body.appendChild(modal);
-    state.modal = modal;
-    modal.querySelector("form").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const button = modal.querySelector("button[type=submit]");
-      const status = document.getElementById("apexAuthStatus");
-      const password = document.getElementById("apexAuthPassword")?.value || "";
-      if (!password) return;
-      button.disabled = true;
-      status.textContent = "正在验证…";
-      try {
-        const response = await originalFetch(api("/login"), { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ password }) });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || `验证失败（${response.status}）`);
-        state.authenticated = true;
-        hideLogin();
-        document.getElementById("apexAuthPassword").value = "";
-        if (typeof window.loadGithub === "function") window.loadGithub();
-      } catch (error) {
-        status.textContent = error.message || "验证失败";
-      } finally {
-        button.disabled = false;
+  function open(message=''){
+    if(!state.modal)buildModal();
+    if(state.modal.hidden){
+      state.returnFocus=document.activeElement;state.overflow=document.body.style.overflow;
+      state.inert=[...document.body.children].filter(e=>e!==state.modal&&e.tagName!=='SCRIPT'&&e.tagName!=='STYLE').map(e=>[e,e.inert]);
+      state.inert.forEach(([e])=>e.inert=true);document.body.style.overflow='hidden';
+    }
+    state.modal.hidden=false;state.modal.setAttribute('aria-hidden','false');
+    document.getElementById('apexAuthStatus').textContent=message;
+    document.getElementById('apexAuthPassword').focus();
+  }
+  async function logout(){
+    if(!window.dispatchEvent(new Event('blog:beforelogout',{cancelable:true})))return;
+    const button=document.querySelector('[data-auth-action]');if(button)button.disabled=true;
+    try{
+      const response=await originalFetch(api('/logout'),{method:'POST',credentials:'include'});
+      if(!response.ok)throw new Error('退出未完成，请稍后重试。');
+      state.authenticated=false;
+      try{localStorage.removeItem('neon-drop-records-v3');}catch{}
+      announce();location.reload();
+    }catch(error){open(/failed to fetch/i.test(error.message)?'暂时无法连接登录服务，请稍后重试。':error.message);}
+    finally{if(button)button.disabled=false;}
+  }
+  window.apexAuthFetch=async(path,init={})=>{
+    const response=await originalFetch(api(path),{...init,credentials:'include',cache:'no-store'});
+    if(response.status===401){state.authenticated=false;announce();if(!document.body.hasAttribute('data-auth-optional'))open('请登录后继续访问私人档案。');}
+    return response;
+  };
+  window.blogAuth={ready,open,close,logout,get authenticated(){return state.authenticated;}};
+  function buildModal(){
+    const apex=document.body.dataset.route==='apex';
+    const modal=document.createElement('div');modal.id='apexAuthModal';modal.hidden=true;modal.setAttribute('aria-hidden','true');
+    modal.innerHTML=`<section class="apex-auth-card" role="dialog" aria-modal="true" aria-labelledby="apexAuthTitle"><button type="button" class="auth-close" aria-label="关闭登录窗口">×</button><div class="apex-auth-lock" aria-hidden="true">△</div><div class="apex-auth-kicker">ERE / PRIVATE ARCHIVE</div><h2 id="apexAuthTitle">${apex?'登录开箱记录':'进入私人档案'}</h2><p class="apex-auth-copy">输入博客密码，继续${apex?'查看与同步开箱记录':'阅读与整理技术记录'}。</p><form id="apexAuthForm"><label for="apexAuthPassword">登录密码<input id="apexAuthPassword" type="password" autocomplete="current-password" required placeholder="输入密码"></label><div class="apex-auth-actions"><button class="apex-auth-submit" type="submit">登录档案</button></div><p class="apex-auth-status" id="apexAuthStatus" role="status" aria-live="polite"></p></form><p class="auth-footnote">私人内容仅在登录后显示。按 ESC 返回页面。</p></section>`;
+    document.body.append(modal);state.modal=modal;
+    modal.querySelector('.auth-close').onclick=close;
+    modal.addEventListener('keydown',event=>{
+      if(event.key==='Escape'){event.preventDefault();close();}
+      if(event.key==='Tab'){
+        const items=[...modal.querySelectorAll('button,input')].filter(e=>!e.disabled),first=items[0],last=items.at(-1);
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
       }
     });
+    modal.querySelector('form').onsubmit=async event=>{
+      event.preventDefault();const button=modal.querySelector('[type=submit]'),input=document.getElementById('apexAuthPassword'),status=document.getElementById('apexAuthStatus');
+      button.disabled=true;status.textContent='正在验证…';
+      try{
+        const response=await originalFetch(api('/login'),{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:input.value})});
+        const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'登录未完成，请稍后重试。');
+        const session=await originalFetch(api('/session'),{credentials:'include',cache:'no-store'});
+        if(!session.ok||!(await session.json()).authenticated)throw new Error('浏览器未能保存登录会话。请允许此站点的跨站 Cookie 后重试。');
+        state.authenticated=true;input.value='';close();announce();
+        if(typeof window.loadGithub==='function')window.loadGithub();
+      }catch(error){status.textContent=/failed to fetch|networkerror/i.test(error.message)?'暂时无法连接登录服务，请稍后重试。':error.message;}
+      finally{button.disabled=false;}
+    };
   }
-
-  async function bootstrap() {
-    try {
-      const response = await originalFetch(api("/session"), { credentials: "include", cache: "no-store" });
-      const data = await response.json().catch(() => ({}));
-      if (response.ok && data.authenticated) {
-        state.authenticated = true;
-        return;
-      }
-    } catch { /* Worker 不可用时由登录界面提示 */ }
-    showLogin();
+  async function bootstrap(){
+    [document.querySelector('.nav-actions'),document.getElementById('mobileLinks')].filter(Boolean).forEach(actions=>{
+      if(actions.querySelector('[data-auth-action]'))return;
+      const button=document.createElement('button');button.className='session-button';button.type='button';button.dataset.authAction='';button.onclick=()=>state.authenticated?logout():open();actions.append(button);
+    });
+    try{const response=await originalFetch(api('/session'),{credentials:'include',cache:'no-store'});state.authenticated=response.ok&&Boolean((await response.json()).authenticated);}catch{}
+    announce();resolveReady(state.authenticated);
+    if(!state.authenticated&&!document.body.hasAttribute('data-auth-optional'))open();
   }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
-  else bootstrap();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootstrap,{once:true});else bootstrap();
 })();

@@ -61,3 +61,13 @@ body .apex-auth-card h2 { font-weight:500; }.apex-auth-card .apex-auth-lock { co
   .mobile-menu-button,.photo-menu-button { width:34px; min-width:34px; }
 }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; }*,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+/* Complete archive interactions. */
+.session-button { min-height:34px;padding:0 11px;border:1px solid var(--ark-line);border-radius:1px;color:var(--ark-muted);background:transparent;font-size:10px;white-space:nowrap;cursor:pointer; }
+.session-button:hover { color:var(--ark-text);border-color:var(--ark-accent); }
+#apexAuthModal {position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;overflow:auto;}#apexAuthModal[hidden]{display:none;}
+.apex-auth-card {position:relative;box-sizing:border-box;width:min(430px,100%);padding:30px;}
+.apex-auth-card h2 {margin:12px 0;font-size:26px;line-height:1.5;}.apex-auth-lock{display:grid;place-items:center;width:44px;height:44px;font-size:23px;}.apex-auth-copy{margin:0 0 22px;}
+.apex-auth-card label {display:block;font-size:13px;}.apex-auth-card input {box-sizing:border-box;width:100%;margin-top:9px;padding:13px;border:1px solid;font-size:16px;}.apex-auth-actions{display:flex;margin-top:16px;}.apex-auth-submit{width:100%;padding:13px;font-size:13px;cursor:pointer;}.apex-auth-status{min-height:20px;font-size:12px;line-height:1.8;color:#ba5e50;}.auth-close{position:absolute;top:12px;right:14px;border:0;background:transparent;color:var(--ark-muted);font-size:25px;cursor:pointer;}.auth-footnote{margin:16px 0 0;color:var(--ark-muted);font-size:10px;line-height:1.9;}
+body .apex-auth-card input {border-color:var(--ark-line);background:var(--ark-input);color:var(--ark-text);}.apex-auth-submit:disabled{opacity:.5;cursor:wait;}
+.back-top {position:fixed;right:24px;bottom:24px;z-index:45;min-height:39px;padding:0 13px;border:1px solid var(--ark-line);border-radius:1px;background:var(--ark-panel);color:var(--ark-text);font-size:11px;cursor:pointer;}.back-top[hidden]{display:none;}
+@media(max-width:720px){.nav-actions>.session-button{display:none;}.mobile-links .session-button{padding:10px 13px;font-size:12px;}.back-top{right:16px;bottom:16px;}}

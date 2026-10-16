@@ -58,7 +58,7 @@
     const next = theme === "light" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem(THEME_KEY, next); } catch {}
-    $("themeLabel").textContent = next === "light" ? "夜间" : "日间";
+    $("themeLabel").textContent = next === "light" ? "日间" : "夜间";
     $("themeIcon").textContent = "◐";
     document.querySelector('meta[name="theme-color"]').content = next === "light" ? "#e8ece7" : "#171b1d";
     $("themeButton").setAttribute("aria-label", next === "light" ? "切换夜间主题" : "切换日间主题");
@@ -112,10 +112,13 @@
     albumPhotoGrid.innerHTML = album.photos.map((photo, photoIndex) => `<button class="album-photo" type="button" data-photo="${photoIndex}" aria-label="查看照片 ${escapeHtml(photo.caption)}"><img src="${photo.src}" alt="" loading="lazy"><span>${escapeHtml(photo.caption)}</span></button>`).join("");
     albumPhotoGrid.querySelectorAll(".album-photo").forEach((figure) => figure.addEventListener("click", () => openLightbox(Number(figure.dataset.photo))));
     setOpen(albumModal, true);
+    writeRoute();
   }
 
   function closeAlbum() {
+    setOpen(lightbox, false);
     setOpen(albumModal, false);
+    writeRoute();
   }
 
   function openLightbox(index) {
@@ -123,6 +126,7 @@
     activePhoto = (index + albums[activeAlbum].photos.length) % albums[activeAlbum].photos.length;
     updateLightbox();
     setOpen(lightbox, true);
+    writeRoute();
   }
 
   function updateLightbox() {
@@ -131,6 +135,8 @@
     lightboxImage.alt = photo.caption;
     lightboxCaption.textContent = photo.caption;
     lightboxCounter.textContent = `${activePhoto + 1} / ${albums[activeAlbum].photos.length}`;
+    $("openOriginal").href=photo.src;
+    if(lightbox.classList.contains("open"))writeRoute();
   }
 
   function stepPhoto(delta) {
@@ -140,6 +146,11 @@
     updateLightbox();
   }
 
+  function writeRoute() {
+    const url=new URL(location.href);url.searchParams.delete("album");url.searchParams.delete("photo");
+    if(albumModal.classList.contains("open")){url.searchParams.set("album",albums[activeAlbum].title);if(lightbox.classList.contains("open"))url.searchParams.set("photo",String(activePhoto+1));}
+    history.replaceState(null,"",url);
+  }
   function setOpen(element, open) {
     if (open) returnFocus.set(element, document.activeElement);
     element.classList.toggle("open", open);
@@ -150,6 +161,7 @@
     albumModal.inert = lightbox.classList.contains("open");
     if (open) element.querySelector("button")?.focus();
     else returnFocus.get(element)?.focus();
+    if(element===lightbox&&!open)writeRoute();
   }
 
   function escapeHtml(value) {
@@ -174,6 +186,7 @@
   }
 
   function initModalEvents() {
+    $("copyPhotoLink").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(location.href);$("copyPhotoLink").textContent="链接已复制";setTimeout(()=>$("copyPhotoLink").textContent="复制图片链接 ↗",1800);}catch{$("copyPhotoLink").textContent="请复制地址栏链接";}});
     $("closeAlbum").addEventListener("click", closeAlbum);
     $("closeLightbox").addEventListener("click", () => setOpen(lightbox, false));
     $("prevPhoto").addEventListener("click", () => stepPhoto(-1));
@@ -207,4 +220,7 @@
   initMenu();
   initModalEvents();
   renderAlbums();
+  const params=new URLSearchParams(location.search),albumIndex=albums.findIndex(album=>album.title===params.get("album"));
+  const photo=Number(params.get("photo"));
+  if(albumIndex>=0){openAlbum(albumIndex);if(Number.isInteger(photo)&&photo>0&&photo<=albums[albumIndex].photos.length)openLightbox(photo-1);}
 })();

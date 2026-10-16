@@ -7,3 +7,5 @@
 本项目新增的页面代码、Apex 记录逻辑和个人数据结构由 ererethka 维护。Apex Legends 为 Electronic Arts/Respawn Entertainment 的商标，本项目仅用于个人记录，不代表官方产品。
 
 2026 年 10 月的全站改版在排版、档案编号、工业细线和信息层级上参考了[《明日方舟》官方网站](https://ak.hypergryph.com/)的平面设计语言；界面由本项目重新实现，未使用其角色美术或官方标识。《明日方舟》相关名称与商标归其权利人所有，本博客与官方无关联。
+
+技术档案的 Markdown 渲染使用 [markdown-it](https://github.com/markdown-it/markdown-it) 15.0.3（MIT），浏览器构建固定保存在 `assets/vendor/`，许可证随文件保留。原始 HTML 解析关闭。

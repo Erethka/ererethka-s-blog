@@ -2,7 +2,7 @@
   const $ = (id) => document.getElementById(id);
   const API = "/documents";
   const params = new URLSearchParams(location.search);
-  const state = { docs: [], activePath: null, activeSha: null, dirty: false, filter: "全部", query: params.get("tag") || "", view: "read", hasDocument: false, saving: false, requestId: 0 };
+  const state = { docs: [], activePath: null, activeSha: null, dirty: false, filter: params.get("category") || "全部", query: params.get("q") || "", view: "read", tag: params.get("tag") || "", month: "", sort: "newest", hasDocument: false, saving: false, requestId: 0 };
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const slugify = (value) => String(value || "untitled").trim().toLowerCase().replace(/[^\w\u4e00-\u9fff-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80) || "untitled";
   const today = () => new Intl.DateTimeFormat("en-CA", {timeZone:"Asia/Shanghai",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
@@ -22,29 +22,14 @@
     let body = $("markdownInput").value.replace(/^\uFEFF/, ""); if (!/^#\s+/.test(body.trim())) body = `# ${title}\n\n${body}`;
     return ["---", `title: ${yamlString(title)}`, `category: ${yamlString(category)}`, `tags: [${tags.map(yamlString).join(", ")}]`, `date: ${yamlString(date)}`, `updated: ${yamlString(new Date().toISOString())}`, `status: ${yamlString(status)}`, `slug: ${yamlString(slugify(title))}`, "---", "", body.trimEnd(), ""].join("\n");
   }
-  function renderMarkdown(source) {
-    const escaped = escapeHtml(source || ""), lines = escaped.split("\n"); let html = "", inCode = false, code = [], list = false, ordered = false;
-    const inline = (s) => s.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/__([^_]+)__/g, "<strong>$1</strong>").replace(/\*([^*]+)\*/g, "<em>$1</em>").replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-    const closeList = () => { if (list) { html += ordered ? "</ol>" : "</ul>"; list = false; ordered = false; } };
-    for (const line of lines) {
-      if (line.trim().startsWith("```")) { if (inCode) { html += `<pre><code>${code.join("\n")}</code></pre>`; code = []; inCode = false; } else { closeList(); inCode = true; } continue; }
-      if (inCode) { code.push(line); continue; } if (!line.trim()) { closeList(); continue; }
-      const heading = line.match(/^(#{1,6})\s+(.+)$/); if (heading) { closeList(); const n = heading[1].length; html += `<h${n}>${inline(heading[2])}</h${n}>`; continue; }
-      if (/^\d+\.\s+/.test(line)) { if (!list || !ordered) { closeList(); html += "<ol>"; list = true; ordered = true; } html += `<li>${inline(line.replace(/^\d+\.\s+/, ""))}</li>`; continue; }
-      if (/^[-*]\s+/.test(line)) { if (!list || ordered) { closeList(); html += "<ul>"; list = true; ordered = false; } html += `<li>${inline(line.replace(/^[-*]\s+/, ""))}</li>`; continue; }
-      if (/^(?:>|&gt;)\s?/.test(line)) { closeList(); html += `<blockquote>${inline(line.replace(/^(?:>|&gt;)\s?/, ""))}</blockquote>`; continue; }
-      if (/^---+$/.test(line.trim())) { closeList(); html += "<hr>"; continue; }
-      closeList(); html += `<p>${inline(line)}</p>`;
-    }
-    if (inCode) html += `<pre><code>${code.join("\n")}</code></pre>`; closeList(); return html || '<p class="preview-empty">开始编辑后，这里显示 Markdown 预览。</p>';
-  }
   function updatePreview() {
     const raw=$("markdownInput").value;
     let body=parseFrontMatter(raw).body;
     const title=$("docTitle").value.trim();
     const first=body.match(/^\s*#\s+([^\n]+)\n*/);
     if(first && first[1].trim()===title) body=body.slice(first[0].length);
-    $("markdownPreview").innerHTML=renderMarkdown(body);
+    $("markdownPreview").innerHTML=window.archiveMarkdown.render(body,state.activePath).html;
+    window.archiveMarkdown.enhance($("markdownPreview"));
     $("wordCount").textContent=`${Array.from(raw).length.toLocaleString("zh-CN")} 字符`;
   }
   function updateBanner() {
@@ -59,6 +44,7 @@
     $("editorState").classList.toggle("dirty",state.dirty);
   }
   function updateControls() {
+    $("exportDocBtn").disabled=!state.hasDocument || state.saving;
     $("saveDocBtn").disabled=!state.hasDocument || !state.dirty || state.saving;
     $("renameDocBtn").disabled=!state.activePath || state.dirty || state.saving;
     $("deleteDocBtn").disabled=!state.activePath || state.dirty || state.saving;
@@ -134,10 +120,10 @@
       $("archiveConnection").textContent="已连接"; $("archiveConnection").classList.remove("error");
       const categories=state.docs.map(doc=>doc.category || "其他");
       if(state.filter!=="全部" && !categories.includes(state.filter)) state.filter="全部";
-      renderCategories(); renderDocList(); updateBanner();
+      renderCategories(); renderIndexes(); renderDocList(); updateBanner();
       if(selectInitial && !state.hasDocument && state.docs.length) {
-        const requested=state.docs.find(doc=>doc.path===params.get("doc")) || state.docs.find(doc=>!state.query || `${doc.title} ${(doc.tags || []).join(" ")}`.toLowerCase().includes(state.query.toLowerCase())) || state.docs[0];
-        await openDocument(requested.path,false);
+        const requested=state.docs.find(doc=>doc.path===params.get("doc")) || visibleDocuments()[0];
+        if(requested)await openDocument(requested.path,false);
       }
     } catch(error) {
       $("archiveConnection").textContent="未连接"; $("archiveConnection").classList.add("error");
@@ -177,12 +163,28 @@
   }
   function renderCategories() {
     const categories=["全部",...new Set(state.docs.map(doc=>doc.category || "其他"))];
-    $("categoryFilter").innerHTML=categories.map(category=>`<button class="category-chip ${state.filter===category ? "active" : ""}" type="button" data-category="${escapeHtml(category)}" aria-pressed="${state.filter===category}">${escapeHtml(category)}</button>`).join("");
+    $("categoryFilter").innerHTML=categories.map(category=>`<button class="category-chip ${state.filter===category ? "active" : ""}" type="button" data-category="${escapeHtml(category)}" aria-pressed="${state.filter===category}">${escapeHtml(category)} <small>${category==="全部"?state.docs.length:state.docs.filter(d=>(d.category||"其他")===category).length}</small></button>`).join("");
     $("categoryOptions").innerHTML=categories.filter(category=>category!=="全部").map(category=>`<option value="${escapeHtml(category)}"></option>`).join("");
   }
-  function renderDocList() {
+  function renderIndexes() {
+    const tags=new Map(),months=new Map();
+    state.docs.forEach(doc=>{(Array.isArray(doc.tags)?doc.tags:[]).forEach(tag=>tags.set(tag,(tags.get(tag)||0)+1));const month=String(doc.date||"").match(/^\d{4}-\d{2}/)?.[0];if(month)months.set(month,(months.get(month)||0)+1);});
+    if(state.tag&&!tags.has(state.tag))state.tag="";
+    if(state.month&&!months.has(state.month))state.month="";
+    $("tagFilter").innerHTML=[...tags].sort((a,b)=>b[1]-a[1]).map(([tag,count])=>`<button type="button" class="category-chip ${state.tag===tag?"active":""}" data-tag="${escapeHtml(tag)}" aria-pressed="${state.tag===tag}">#${escapeHtml(tag)} <small>${count}</small></button>`).join("") || '<span class="index-empty">暂无标签</span>';
+    $("monthFilter").innerHTML='<option value="">全部月份</option>'+[...months].sort((a,b)=>b[0].localeCompare(a[0])).map(([month,count])=>`<option value="${month}">${month} / ${count} 篇</option>`).join("");$("monthFilter").value=state.month;
+  }
+  function visibleDocuments() {
     const query=state.query.trim().toLowerCase();
-    const docs=state.docs.filter(doc=>(state.filter==="全部" || (doc.category || "其他")===state.filter) && (!query || `${doc.title} ${doc.category} ${(doc.tags || []).join(" ")} ${doc.path}`.toLowerCase().includes(query)));
+    const docs=state.docs.filter(doc=>(state.filter==="全部" || (doc.category || "其他")===state.filter) && (!state.tag || (doc.tags || []).includes(state.tag)) && (!state.month || String(doc.date||"").startsWith(state.month)) && (!query || `${doc.title} ${doc.category} ${(doc.tags || []).join(" ")} ${doc.path}`.toLowerCase().includes(query)));
+    if(state.sort==="oldest") docs.reverse();
+    if(state.sort==="title") docs.sort((a,b)=>String(a.title||"").localeCompare(String(b.title||""),"zh-CN"));
+    return docs;
+  }
+  function renderDocList() {
+    const docs=visibleDocuments();
+    $("activeFilters").textContent=[state.filter!=="全部"?state.filter:"",state.tag?`#${state.tag}`:"",state.month].filter(Boolean).join(" / ") || "全部记录";
+    $("clearFilters").hidden=!(state.query || state.tag || state.month || state.filter!=="全部");
     $("catalogCount").textContent=String(docs.length).padStart(2,"0");
     $("docList").innerHTML=docs.length ? docs.map(doc=>{
       const title=doc.title || doc.path.split("/").pop();
@@ -240,6 +242,12 @@
     if(deleted && state.docs.length) await openDocument(state.docs[0].path,false);
   }
   function bind() {
+    $("exportDocBtn").addEventListener("click",()=>{if(state.hasDocument)window.archiveMarkdown.download(buildMarkdown(),`${slugify($("docTitle").value)}.md`);});
+    $("docSort").addEventListener("change",event=>{state.sort=event.target.value;renderDocList();});
+    $("clearFilters").addEventListener("click",()=>{state.query="";state.tag="";state.month="";state.filter="全部";$("docSearch").value="";renderCategories();renderIndexes();renderDocList();});
+    $("tagFilter").addEventListener("click",event=>{const button=event.target.closest("[data-tag]");if(!button)return;state.tag=state.tag===button.dataset.tag?"":button.dataset.tag;renderIndexes();renderDocList();});
+    $("monthFilter").addEventListener("change",event=>{state.month=event.target.value;renderDocList();});
+    window.addEventListener("blog:beforelogout",event=>{if(state.saving || !confirmDiscard())event.preventDefault();});
     $("newDocBtn").addEventListener("click",newDocument); $("saveDocBtn").addEventListener("click",saveDocument);
     $("renameDocBtn").addEventListener("click",renameDocument); $("deleteDocBtn").addEventListener("click",deleteDocument);
     $("importBtn").addEventListener("click",()=>$("fileInput").click());

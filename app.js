@@ -8,6 +8,9 @@ const body = document.body;
 const state = {
   records: [],
   remoteSha: null,
+  pending: false,
+  syncing: false,
+  revision: 0,
 };
 
 function toast(message) {
@@ -71,6 +74,7 @@ function initMobileNav() {
 }
 
 function currentNav() {
+  if (body?.dataset.route === "updates") return "updates";
   if (body?.dataset.route === "apex") return "apex";
   if (["dev","reader"].includes(body?.dataset.route)) return "dev";
   const hash = location.hash.replace(/^#/, "");
@@ -113,13 +117,15 @@ function initSearch() {
     { title: "档案索引", detail: "项目 / 技术记录 / 照片墙 / 游戏", href: "#projects" },
     { title: "照片墙", detail: "影像档案 / 相册 / 雾与火 / 等一班车 / 游戏时刻 / 夜航", href: "photowall/index.html" },
     { title: "音乐角落", detail: "日常旋律 / 网易云音乐", href: "#music" },
+    { title: "站点动态与使用说明", detail: "更新日志 / RSS 订阅 / 登录指南 / Markdown / 备份", href: "updates/index.html" },
     { title: "关于这个档案", detail: "个人记录 / About", href: "#about" },
   ];
   const render = () => {
     const query = input.value.trim().toLowerCase();
     if (!query) { results.hidden = true; results.innerHTML = ""; return; }
     const titleRank = (entry) => entry.title.toLowerCase() === query ? 2 : Number(entry.title.toLowerCase().includes(query));
-    const matches = entries
+    const privateEntries=(window.blogSearchDocuments || []).map(doc=>({title:doc.title || doc.path,detail:`${doc.category || '其他'} / ${(doc.tags || []).join(' / ')}`,href:`dev/reader.html?doc=${encodeURIComponent(doc.path)}`}));
+    const matches = [...entries,...privateEntries]
       .filter((entry) => `${entry.title} ${entry.detail}`.toLowerCase().includes(query))
       .sort((a, b) => titleRank(b) - titleRank(a));
     results.innerHTML = matches.length ? matches.map((entry) => `<a class="search-result" href="${entry.href}"><strong>${escapeHtml(entry.title)}</strong><small>${escapeHtml(entry.detail)}</small></a>`).join("") : `<div class="search-result"><strong>没有找到相关内容</strong><small>试试搜索 Apex、项目或照片墙</small></div>`;
@@ -252,14 +258,18 @@ function syncErrorMessage(error) {
 }
 
 async function saveGithub(show = true) {
+  if(state.syncing)return false;
+  state.syncing=true;
+  const revision=state.revision, content=payload();
   try {
     const remote = await getRemote();
-    const body = { message: "chore: update Apex pack count log", content: b64Encode(payload()), branch: "main" };
+    const body = { message: "chore: update Apex pack count log", content: b64Encode(content), branch: "main" };
     if (remote.sha) body.sha = remote.sha;
     const response = await apexFetch("/apex", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     if (response.status === 401) throw new Error("登录已过期，请重新验证");
     if (!response.ok) throw new Error(`私有数据保存失败（${response.status}）`);
     state.remoteSha = (await response.json()).content?.sha || remote.sha;
+    state.pending=state.revision!==revision;
     updateSyncPill(true);
     if (show) toast("已保存到 GitHub 私库");
     return true;
@@ -267,13 +277,15 @@ async function saveGithub(show = true) {
     setSync(/登录/.test(error.message) ? "需要登录" : "同步未完成");
     if (show) toast(syncErrorMessage(error));
     throw error;
-  }
+  } finally { state.syncing=false;if(state.pending&&state.revision!==revision)scheduleGithubSave(); }
 }
 
 async function loadGithub() {
+  const revision=state.revision;
   try {
     setSync("正在同步…", "working");
     const remote = await getRemote();
+    if(state.pending || state.revision!==revision){setSync("本地更改待同步");return;}
     state.remoteSha = remote.sha;
     if (remote.sha || !state.records.length) {
       state.records = remote.records;
@@ -290,6 +302,7 @@ async function loadGithub() {
 
 let saveTimer;
 function scheduleGithubSave() {
+  state.pending=true;state.revision++;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => saveGithub(false).catch(() => {}), 900);
 }
@@ -314,6 +327,12 @@ function initApex() {
     syncPackControls();
   }));
   syncPackControls();
+  $("retrySync")?.addEventListener("click",()=>state.pending?saveGithub().catch(()=>{}):loadGithub());
+  $("exportRecords")?.addEventListener("click",()=>{
+    const url=URL.createObjectURL(new Blob([payload()],{type:"application/json;charset=utf-8"}));const link=document.createElement("a");link.href=url;link.download=`apex-records-${today()}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+  window.addEventListener("beforeunload",event=>{if(state.pending){event.preventDefault();event.returnValue="";}});
+  window.addEventListener("blog:beforelogout",event=>{if(state.pending&&!confirm("还有记录未同步。退出会清除本机记录缓存，确定退出吗？建议先重新同步或导出备份。"))event.preventDefault();});
   $("recordForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const record = normalizeRecord({ id: uid(), date: $("date").value, packs: Number($("packs").value), createdAt: Date.now() });
@@ -352,3 +371,10 @@ initCopyButtons();
 initSearch();
 initClock();
 initApex();
+
+// Long pages keep a reachable way back to their index.
+const backTop=document.createElement('button');
+backTop.type='button';backTop.className='back-top';backTop.textContent='↑ 顶部';backTop.hidden=true;backTop.setAttribute('aria-label','返回页面顶部');
+backTop.onclick=()=>{window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});document.querySelector('main')?.focus({preventScroll:true});};
+document.body.append(backTop);
+window.addEventListener('scroll',()=>backTop.hidden=scrollY<600,{passive:true});
