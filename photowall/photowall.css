@@ -66,3 +66,7 @@ body[data-route="photowall"] a { color:inherit; }
 @media(max-width:600px){.lightbox-artwork{gap:4px 12px;}.lightbox-artwork strong{width:100%;}.lightbox-artwork small{font-size:8px;}}
 
 .album-preview.is-single{grid-template-columns:1fr;}.album-photo img{height:auto;aspect-ratio:16/10;object-fit:contain;background:#171b1d;}
+
+.photo-hero h1{letter-spacing:0;font-weight:600;}
+.photo-hero-copy>p{font-size:13px;line-height:2;letter-spacing:0;}
+.album-info p{font-size:12px;line-height:1.9;}

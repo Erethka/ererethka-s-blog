@@ -34,7 +34,7 @@ function setTheme(theme, notify = false) {
   $("themeButton")?.setAttribute("aria-label", dark ? "切换日间主题" : "切换夜间主题");
   $("themeCard")?.setAttribute("aria-label", dark ? "切换日间主题" : "切换夜间主题");
   if ($("themeCardTitle")) $("themeCardTitle").textContent = dark ? "浅色模式" : "深色模式";
-  if ($("themeCardCopy")) $("themeCardCopy").textContent = dark ? "切换到纸色界面" : "切换到深色界面";
+  if ($("themeCardCopy")) $("themeCardCopy").textContent = dark ? "试试浅色主题" : "试试深色主题";
   if ($("themeOrb")) $("themeOrb").textContent = dark ? "☼" : "☾";
   if (notify) toast(dark ? "已切换到夜间模式" : "已切换到日间模式");
 }
@@ -43,8 +43,9 @@ function initTheme() {
   let saved = "dark";
   try { saved = localStorage.getItem(THEME_KEY) || "dark"; } catch { /* private browsing */ }
   setTheme(saved);
-  $("themeButton")?.addEventListener("click", () => setTheme(root.dataset.theme === "dark" ? "light" : "dark", true));
-  $("themeCard")?.addEventListener("click", () => setTheme(root.dataset.theme === "dark" ? "light" : "dark", true));
+  const toggle = () => window.blogThemeChange(() => setTheme(root.dataset.theme === "dark" ? "light" : "dark", true));
+  $("themeButton")?.addEventListener("click", toggle);
+  $("themeCard")?.addEventListener("click", toggle);
 }
 
 function initMobileNav() {
@@ -113,13 +114,13 @@ function initSearch() {
   const results = $("searchResults");
   if (!input || !results) return;
   const entries = [
-    { title: "Apex 开箱记录", detail: "500 包保底循环 / Apex Legends", href: "apex/index.html" },
-    { title: "技术档案", detail: "技术记录 / 开发笔记 / Markdown / 实验与问题解法", href: "dev/index.html" },
-    { title: "探索内容地图", detail: "档案索引 / 目录 / 技术记录 / 照片墙 / 游戏", href: "explore/index.html" },
-    { title: "照片墙", detail: "影像档案 / 相册 / 城市切片 / 冷光片段 / 游戏时刻 / 天台来风 / 雾与火 / 等一班车 / 夜航", href: "photowall/index.html" },
+    { title: "Apex 开箱记录", detail: "开箱数量 / 500 包循环 / Apex Legends", href: "apex/index.html" },
+    { title: "技术笔记", detail: "技术笔记 / 开发笔记 / Markdown / 实验与问题解法", href: "dev/index.html" },
+    { title: "探索", detail: "博客栏目 / 目录 / 技术笔记 / 相册 / 游戏", href: "explore/index.html" },
+    { title: "相册", detail: "插画收藏 / 相册 / 城市切片 / 冷光片段 / 游戏时刻 / 天台来风 / 雾与火 / 等一班车 / 夜航", href: "photowall/index.html" },
     { title: "音乐角落", detail: "日常旋律 / 网易云音乐", href: "#music" },
-    { title: "站点动态与使用说明", detail: "更新日志 / RSS 订阅 / 登录指南 / Markdown / 备份", href: "updates/index.html" },
-    { title: "关于这个档案", detail: "个人记录 / About", href: "#about" },
+    { title: "更新日志与使用说明", detail: "更新日志 / RSS 订阅 / 登录指南 / Markdown / 备份", href: "updates/index.html" },
+    { title: "关于我", detail: "个人记录 / About", href: "#about" },
   ];
   const render = () => {
     const query = input.value.trim().toLowerCase();
@@ -129,7 +130,7 @@ function initSearch() {
     const matches = [...entries,...privateEntries]
       .filter((entry) => `${entry.title} ${entry.detail}`.toLowerCase().includes(query))
       .sort((a, b) => titleRank(b) - titleRank(a));
-    results.innerHTML = matches.length ? matches.map((entry) => `<a class="search-result" href="${entry.href}"><strong>${escapeHtml(entry.title)}</strong><small>${escapeHtml(entry.detail)}</small></a>`).join("") : `<div class="search-result"><strong>没有找到相关内容</strong><small>试试搜索 Apex、项目或照片墙</small></div>`;
+    results.innerHTML = matches.length ? matches.map((entry) => `<a class="search-result" href="${entry.href}"><strong>${escapeHtml(entry.title)}</strong><small>${escapeHtml(entry.detail)}</small></a>`).join("") : `<div class="search-result"><strong>没有找到相关内容</strong><small>试试搜索 Apex、笔记或相册</small></div>`;
     results.hidden = false;
   };
   input.addEventListener("input", render);
@@ -225,7 +226,7 @@ function renderRecords() {
 function renderApex() { updateApexStats(); renderRecords(); }
 
 function apexFetch(path, init = {}) {
-  if (typeof window.apexAuthFetch !== "function") throw new Error("Apex 安全代理未加载");
+  if (typeof window.apexAuthFetch !== "function") throw new Error("登录服务未加载，请刷新页面重试");
   return window.apexAuthFetch(path, init);
 }
 
@@ -272,7 +273,7 @@ async function saveGithub(show = true) {
     state.remoteSha = (await response.json()).content?.sha || remote.sha;
     state.pending=state.revision!==revision;
     updateSyncPill(true);
-    if (show) toast("已保存到 GitHub 私库");
+    if (show) toast("记录已同步");
     return true;
   } catch (error) {
     setSync(/登录/.test(error.message) ? "需要登录" : "同步未完成");
@@ -292,7 +293,7 @@ async function loadGithub() {
       state.records = remote.records;
       writeLocal();
       renderApex();
-      toast(`已从私有仓库拉取 ${remote.records.length} 条记录`);
+      toast(`已加载 ${remote.records.length} 条开箱记录`);
     }
     updateSyncPill(Boolean(remote.sha));
   } catch (error) {
@@ -345,7 +346,7 @@ function initApex() {
     $("date").value = today();
     $("packs").value = 1;
     syncPackControls();
-    toast("已保存本地，正在同步私有仓库…");
+    toast("已保存到本机，正在同步…");
     if (window.matchMedia("(max-width: 720px)").matches) $("history-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   $("emptyCta")?.addEventListener("click", () => {

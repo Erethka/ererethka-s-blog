@@ -151,3 +151,6 @@ body[data-route="apex"] .apex-auth-submit { color:var(--apex-ink); background:va
 @media(max-width:380px) { .apex-page { width:calc(100% - 24px); }.apex-page-heading { grid-template-columns:minmax(0,1fr) 84px; gap:10px; }.apex-index-label { font-size:7px; }.apex-masthead-index { padding-left:11px; }.apex-section-line { font-size:6px; }.apex-section-line b { font-size:8px; }.cycle-overview { padding:20px; }.cycle-amount .cycle-remaining { flex-basis:100%; margin:0; } }
 @media(prefers-reduced-motion:reduce) { .cycle-track>span { transition:none; } }
 .apex-data-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px;}.apex-data-tools button{padding:6px 8px;border:1px solid var(--apex-line);border-radius:0;color:var(--apex-muted);background:transparent;font-size:10px;cursor:pointer;}.apex-data-tools button:hover{border-color:var(--apex-red);color:var(--apex-text);}
+
+.apex-page h1{letter-spacing:0;font-weight:600;}
+.apex-page-description{font-size:13px;line-height:2;letter-spacing:0;}

@@ -21,7 +21,7 @@
   let chapterLinks=[];
   if(home){
     const rail=document.createElement('nav');rail.className='scroll-compass';rail.setAttribute('aria-label','首页章节');
-    [['home','首页'],['projects','快捷入口'],['recent','最近记录'],['photowall','影像选集'],['timeline','站点记录'],['about','关于']].forEach(([id,label],i)=>{
+    [['home','首页'],['projects','博客栏目'],['recent','最近的笔记'],['photowall','喜欢的画面'],['timeline','博客更新'],['about','关于']].forEach(([id,label],i)=>{
       const a=document.createElement('a');a.href=`#${id}`;a.title=label;a.setAttribute('aria-label',label);a.dataset.chapter=id;a.innerHTML=`<span>${String(i).padStart(2,'0')}</span><i></i>`;rail.append(a);
     });document.body.append(rail);
   }

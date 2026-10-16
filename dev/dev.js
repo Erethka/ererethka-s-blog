@@ -7,9 +7,9 @@
   const slugify = (value) => String(value || "untitled").trim().toLowerCase().replace(/[^\w\u4e00-\u9fff-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80) || "untitled";
   const today = () => new Intl.DateTimeFormat("en-CA", {timeZone:"Asia/Shanghai",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
   const notify = (message) => { const el=$("toast"); clearTimeout(notify.timer); el.textContent=message; el.classList.add("show"); notify.timer=setTimeout(()=>el.classList.remove("show"),2400); };
-  const friendlyError = (error) => /failed to fetch|networkerror|load failed/i.test(error?.message || "") ? "暂时无法连接私人档案，请稍后重试。" : (error?.message || "操作未完成，请稍后重试。");
+  const friendlyError = (error) => /failed to fetch|networkerror|load failed/i.test(error?.message || "") ? "暂时无法加载笔记，请稍后重试。" : (error?.message || "操作未完成，请稍后重试。");
   const statusText = (status) => status === "published" ? "正式" : status === "archived" ? "归档" : "草稿";
-  const confirmDiscard = () => !state.dirty || confirm("当前记录有未保存的修改，确定离开吗？");
+  const confirmDiscard = () => !state.dirty || confirm("当前笔记有未保存的修改，确定离开吗？");
   function parseFrontMatter(markdown) {
     const match = String(markdown || "").match(/^---\s*\n([\s\S]*?)\n---\s*\n?/); if (!match) return { meta: {}, body: String(markdown || "") };
     const meta = {};
@@ -18,7 +18,7 @@
   }
   const yamlString = (value) => `"${String(value ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r?\n/g, " ")}"`;
   function buildMarkdown() {
-    const title = $("docTitle").value.trim() || "未命名技术记录", category = $("docCategory").value.trim() || "其他", tags = $("docTags").value.split(",").map((v) => v.trim()).filter(Boolean), date = $("docDate").value || today(), status = $("docStatus").value || "draft";
+    const title = $("docTitle").value.trim() || "未命名技术笔记", category = $("docCategory").value.trim() || "其他", tags = $("docTags").value.split(",").map((v) => v.trim()).filter(Boolean), date = $("docDate").value || today(), status = $("docStatus").value || "draft";
     let body = $("markdownInput").value.replace(/^\uFEFF/, ""); if (!/^#\s+/.test(body.trim())) body = `# ${title}\n\n${body}`;
     return ["---", `title: ${yamlString(title)}`, `category: ${yamlString(category)}`, `tags: [${tags.map(yamlString).join(", ")}]`, `date: ${yamlString(date)}`, `updated: ${yamlString(new Date().toISOString())}`, `status: ${yamlString(status)}`, `slug: ${yamlString(slugify(title))}`, "---", "", body.trimEnd(), ""].join("\n");
   }
@@ -34,13 +34,13 @@
   }
   function updateBanner() {
     if(!state.hasDocument) return;
-    $("documentHeading").textContent=$("docTitle").value.trim() || "未命名记录";
+    $("documentHeading").textContent=$("docTitle").value.trim() || "未命名笔记";
     const index=state.docs.findIndex(doc=>doc.path===state.activePath);
     $("documentCode").textContent=state.activePath ? `RECORD / ${String(index+1).padStart(3,"0")}` : "RECORD / NEW";
     const category=$("docCategory").value.trim() || "未分类";
     const date=$("docDate").value || today();
     $("documentSubline").innerHTML=`<span>${escapeHtml(category)}</span><span class="meta-separator">/</span><span>${escapeHtml(date)}</span><span class="document-status">${statusText($("docStatus").value)}</span>`;
-    $("editorState").textContent=state.saving ? "正在保存" : state.dirty ? "未保存" : state.activePath ? "已同步" : "新记录";
+    $("editorState").textContent=state.saving ? "正在保存" : state.dirty ? "未保存" : state.activePath ? "已同步" : "新笔记";
     $("editorState").classList.toggle("dirty",state.dirty);
   }
   function updateControls() {
@@ -73,7 +73,7 @@
     if(matchMedia("(max-width:720px)").matches) {
       document.querySelector(".doc-sidebar").classList.remove("catalog-expanded");
       $("catalogToggle").setAttribute("aria-expanded","false");
-      $("catalogToggle").textContent="切换记录 ＋";
+      $("catalogToggle").textContent="切换笔记 ＋";
       $("editorShell").scrollIntoView({behavior:"smooth",block:"start"});
     }
   }
@@ -87,7 +87,7 @@
     $("markdownInput").value=body.trimStart();
     state.activePath=path; state.activeSha=sha || null; state.hasDocument=true;
     $("editorFile").textContent=path;
-    $("saveHint").textContent="修改后请保存，文档会同步到私人档案。";
+    $("saveHint").textContent="修改后请点击保存，笔记会自动同步。";
     $("documentProperties").open=false;
     setDirty(false); setView("read"); updatePreview(); renderDocList();
   }
@@ -95,18 +95,18 @@
     if(state.saving || !confirmDiscard()) return;
     state.requestId++;
     state.activePath=null; state.activeSha=null; state.hasDocument=true;
-    $("docTitle").value=""; $("docCategory").value="开发记录"; $("docTags").value="";
+    $("docTitle").value=""; $("docCategory").value="开发笔记"; $("docTags").value="";
     $("docDate").value=today(); $("docStatus").value="draft";
     $("markdownInput").value="## 问题\n\n描述这次遇到的问题。\n\n## 解决过程\n\n## 结果与复盘\n";
-    $("editorFile").textContent="新记录 / 尚未保存";
-    $("saveHint").textContent="为记录填写标题，保存后即可在索引中找到。";
+    $("editorFile").textContent="新笔记 / 尚未保存";
+    $("saveHint").textContent="为笔记填写标题，保存后即可在索引中找到。";
     setDirty(true); setView("edit"); $("documentProperties").open=true;
     updatePreview(); renderDocList(); scrollToDocument(); $("docTitle").focus({preventScroll:true});
   }
   async function authFetch(path,init={}) {
     if(typeof window.apexAuthFetch!=="function") throw new Error("同步服务未加载，请刷新页面。");
     const response=await window.apexAuthFetch(path,init);
-    if(response.status===401) throw new Error("请先登录私人档案。");
+    if(response.status===401) throw new Error("请先登录。");
     return response;
   }
   async function loadDocuments({selectInitial=true}={}) {
@@ -146,7 +146,7 @@
   async function saveDocument() {
     if(!state.hasDocument || !state.dirty || state.saving) return;
     const title=$("docTitle").value.trim();
-    if(!title) { setView("edit"); $("documentProperties").open=true; $("docTitle").focus(); return notify("请先填写记录标题。"); }
+    if(!title) { setView("edit"); $("documentProperties").open=true; $("docTitle").focus(); return notify("请先填写笔记标题。"); }
     const content=buildMarkdown(), path=state.activePath || `docs/${slugify(title)}.md`;
     if(!state.activePath && state.docs.some(doc=>doc.path===path)) return notify("同名文件已存在，请修改标题后保存。");
     const originalPath=state.activePath;
@@ -156,8 +156,8 @@
       const data=await response.json().catch(()=>({}));
       if(!response.ok) throw new Error(data.error || `保存失败（${response.status}）`);
       state.activePath=path; state.activeSha=data.sha || state.activeSha;
-      $("editorFile").textContent=path; $("saveHint").textContent="已保存到私人档案。";
-      setDirty(false); await loadDocuments({selectInitial:false}); notify("记录已保存。");
+      $("editorFile").textContent=path; $("saveHint").textContent="已保存，笔记已同步。";
+      setDirty(false); await loadDocuments({selectInitial:false}); notify("笔记已保存。");
     } catch(error) { $("saveHint").textContent=friendlyError(error); notify(friendlyError(error)); }
     finally { state.saving=false; updateBanner(); updateControls(); }
   }
@@ -183,14 +183,14 @@
   }
   function renderDocList() {
     const docs=visibleDocuments();
-    $("activeFilters").textContent=[state.filter!=="全部"?state.filter:"",state.tag?`#${state.tag}`:"",state.month].filter(Boolean).join(" / ") || "全部记录";
+    $("activeFilters").textContent=[state.filter!=="全部"?state.filter:"",state.tag?`#${state.tag}`:"",state.month].filter(Boolean).join(" / ") || "全部笔记";
     $("clearFilters").hidden=!(state.query || state.tag || state.month || state.filter!=="全部");
     $("catalogCount").textContent=String(docs.length).padStart(2,"0");
     $("docList").innerHTML=docs.length ? docs.map(doc=>{
       const title=doc.title || doc.path.split("/").pop();
       const number=String(state.docs.indexOf(doc)+1).padStart(2,"0");
       return `<article class="doc-item ${state.activePath===doc.path ? "active" : ""}"><button class="doc-select" data-path="${escapeHtml(doc.path)}" type="button" aria-pressed="${state.activePath===doc.path}" ${state.saving ? "disabled" : ""}><span class="doc-item-number">${number}</span><span class="doc-item-title">${escapeHtml(title)}</span><span class="doc-item-meta"><span class="doc-item-state">${statusText(doc.status)}</span>${escapeHtml(doc.date || "未标注日期")}<br>${escapeHtml(doc.category || "其他")}</span></button><a class="doc-reader-action" href="reader.html?doc=${encodeURIComponent(doc.path)}" aria-label="独立阅读：${escapeHtml(title)}">↗</a></article>`;
-    }).join("") : `<div class="doc-loading">${state.docs.length ? "没有匹配的记录，试试其他关键词。" : "还没有记录。点击上方「新建记录」，开始你的第一份档案。"}</div>`;
+    }).join("") : `<div class="doc-loading">${state.docs.length ? "没有匹配的笔记，试试其他关键词。" : "还没有笔记。点击上方「新建笔记」开始写。"}</div>`;
   }
   async function importMarkdown(file) {
     if(state.saving || !file || !confirmDiscard()) return;
@@ -203,7 +203,7 @@
       $("docCategory").value=meta.category || "其他"; $("docTags").value=Array.isArray(meta.tags) ? meta.tags.join(", ") : meta.tags || "";
       $("docDate").value=meta.date || today(); $("docStatus").value=["draft","published","archived"].includes(meta.status) ? meta.status : "draft";
       $("markdownInput").value=body.trimStart(); $("editorFile").textContent=file.name;
-      $("saveHint").textContent="文档已导入，保存后将创建新记录。";
+      $("saveHint").textContent="文档已导入，保存后将创建新笔记。";
       setDirty(true); setView("edit"); $("documentProperties").open=true;
       updatePreview(); renderDocList(); scrollToDocument(); notify("文档已导入，等待保存。");
     } catch(error) { notify(friendlyError(error)); }
@@ -225,7 +225,7 @@
     finally { state.saving=false; updateBanner(); updateControls(); $("docMore").open=false; }
   }
   async function deleteDocument() {
-    if(state.saving || !state.activePath || state.dirty || !confirm(`删除「${$("docTitle").value}」？删除会同步到私人档案。`)) return;
+    if(state.saving || !state.activePath || state.dirty || !confirm(`删除「${$("docTitle").value}」？同步后的笔记也会删除。`)) return;
     const path=state.activePath;
     let deleted=false;
     state.requestId++; state.saving=true; updateControls(); updateBanner();
@@ -235,8 +235,8 @@
       if(!response.ok) throw new Error(data.error || `删除失败（${response.status}）`);
       state.docs=state.docs.filter(doc=>doc.path!==path);
       state.activePath=null; state.activeSha=null; state.hasDocument=false; state.requestId++;
-      $("documentHeading").textContent="选择一份记录"; $("documentCode").textContent="RECORD / —"; $("documentSubline").textContent="从左侧索引开始，继续探索。"; $("editorFile").textContent="未选择文档"; $("editorState").textContent="待选择"; $("wordCount").textContent="0 字符";
-      updateControls(); await loadDocuments({selectInitial:false}); deleted=true; notify("记录已删除。");
+      $("documentHeading").textContent="选择一篇笔记"; $("documentCode").textContent="RECORD / —"; $("documentSubline").textContent="从列表中选择笔记，或新建一篇。"; $("editorFile").textContent="未选择文档"; $("editorState").textContent="待选择"; $("wordCount").textContent="0 字符";
+      updateControls(); await loadDocuments({selectInitial:false}); deleted=true; notify("笔记已删除。");
     } catch(error) { notify(friendlyError(error)); }
     finally { state.saving=false; updateBanner(); updateControls(); $("docMore").open=false; }
     if(deleted && state.docs.length) await openDocument(state.docs[0].path,false);
@@ -256,7 +256,7 @@
     $("catalogToggle").addEventListener("click",()=>{
       const open=document.querySelector(".doc-sidebar").classList.toggle("catalog-expanded");
       $("catalogToggle").setAttribute("aria-expanded",String(open));
-      $("catalogToggle").textContent=open ? "收起索引 −" : "切换记录 ＋";
+      $("catalogToggle").textContent=open ? "收起索引 −" : "切换笔记 ＋";
     });
     $("docSearch").addEventListener("input",event=>{state.query=event.target.value;renderDocList();});
     $("categoryFilter").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;state.filter=button.dataset.category;renderCategories();renderDocList();});

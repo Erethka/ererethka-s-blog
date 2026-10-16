@@ -28,24 +28,24 @@
   const albums = [
     {
       title: "城市切片", aliases: ["雾与火", "灰阶肖像"], date: "CURATED / CITY FRAGMENTS",
-      description: "人物、建筑与风，一起留在画面里。",
+      description: "城市题材的插画，作者为 loundraw 和 SWAV。",
       photos: [artwork("loundraw-city", "01 · 城市上空 / loundraw"), artwork("swav-resurgum", "02 · ReSURGUM / SWAV")]
     },
     {
       title: "冷光片段", aliases: ["等一班车"], date: "CURATED / ON THE WAY",
-      description: "车厢里的短暂停留，也有自己的光线。",
+      description: "GUWEIZ 的地铁场景插画。",
       photos: [artwork("guweiz-subway", "01 · 途中片刻 / GUWEIZ")]
     },
     {
       title: "游戏时刻", date: "2026 · GAME",
-      description: "角色与战场，游戏里的记忆。",
+      description: "Apex Legends 游戏画面。",
       photos: [
         { src: "../assets/backgrounds/light/apex-champions.jpg", caption: "01 · Apex时刻" }
       ]
     },
     {
       title: "天台来风", aliases: ["夜航"], date: "CURATED / ROOFTOP AIR",
-      description: "城市很远，风恰好经过。",
+      description: "loundraw 的天台场景插画。",
       photos: [artwork("loundraw-rooftop", "01 · 天台来风 / loundraw")]
     }
   ];
@@ -78,7 +78,7 @@
     let saved = "dark";
     try { saved = localStorage.getItem(THEME_KEY) || "dark"; } catch {}
     applyTheme(saved);
-    $("themeButton").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light"));
+    $("themeButton").addEventListener("click", () => window.blogThemeChange(() => applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light")));
   }
 
   function renderAlbums(query = "") {
@@ -92,13 +92,13 @@
       const albumIndex = albums.indexOf(album);
       const preview = album.photos.slice(0, 3);
       const number = String(albumIndex + 1).padStart(2, "0");
-      return `<article class="album-card" data-album="${albumIndex}" tabindex="0" role="button" aria-label="打开相册 ${escapeHtml(album.title)}，${album.photos.length} 张照片">
+      return `<article class="album-card" data-album="${albumIndex}" tabindex="0" role="button" aria-label="打开相册 ${escapeHtml(album.title)}，${album.photos.length} 张图片">
         <div class="album-card-top"><span><i aria-hidden="true">■</i>COLLECTION / ${number}</span><span>${escapeHtml(album.date)}</span></div>
         <div class="album-preview${preview.length > 2 ? " has-three" : preview.length === 1 ? " is-single" : ""}" aria-hidden="true">${preview.map((photo) => `<img src="${photo.thumbnail || photo.src}" alt="" loading="lazy" decoding="async">`).join("")}</div>
         <div class="album-info">
           <div><h3>${escapeHtml(album.title)}</h3><p>${escapeHtml(album.description)}</p></div><span class="album-open" aria-hidden="true">↗</span>
         </div>
-        <div class="album-card-bottom"><span>${String(album.photos.length).padStart(2, "0")} 张影像</span><span>VIEW COLLECTION ↗</span></div>
+        <div class="album-card-bottom"><span>${String(album.photos.length).padStart(2, "0")} 张图片</span><span>VIEW COLLECTION ↗</span></div>
       </article>`;
     }).join("");
 
@@ -229,7 +229,7 @@
 
   $("albumCount").textContent = `${albums.length} 个相册`;
   $("collectionTotal").textContent = String(albums.length).padStart(2, "0");
-  $("photoCount").textContent = `${albums.reduce((sum, album) => sum + album.photos.length, 0)} 张照片`;
+  $("photoCount").textContent = `${albums.reduce((sum, album) => sum + album.photos.length, 0)} 张图片`;
   search.addEventListener("input", () => renderAlbums(search.value));
   initTheme();
   initMenu();

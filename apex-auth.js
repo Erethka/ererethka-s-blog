@@ -7,7 +7,7 @@
   const ready=new Promise(resolve=>resolveReady=resolve);
   const api=path=>`${API_BASE}${path}`;
   function announce(){
-    document.querySelectorAll('[data-auth-action]').forEach(button=>{button.textContent=state.authenticated?'退出登录':'登录档案';button.setAttribute('aria-label',button.textContent);});
+    document.querySelectorAll('[data-auth-action]').forEach(button=>{button.textContent=state.authenticated?'退出登录':'登录';button.setAttribute('aria-label',button.textContent);});
     window.dispatchEvent(new CustomEvent('blog:authchange',{detail:{authenticated:state.authenticated}}));
   }
   function close(){
@@ -41,14 +41,14 @@
   }
   window.apexAuthFetch=async(path,init={})=>{
     const response=await originalFetch(api(path),{...init,credentials:'include',cache:'no-store'});
-    if(response.status===401){state.authenticated=false;announce();if(!document.body.hasAttribute('data-auth-optional'))open('请登录后继续访问私人档案。');}
+    if(response.status===401){state.authenticated=false;announce();if(!document.body.hasAttribute('data-auth-optional'))open('请先登录，再查看私人内容。');}
     return response;
   };
   window.blogAuth={ready,open,close,logout,get authenticated(){return state.authenticated;}};
   function buildModal(){
     const apex=document.body.dataset.route==='apex';
     const modal=document.createElement('div');modal.id='apexAuthModal';modal.hidden=true;modal.setAttribute('aria-hidden','true');
-    modal.innerHTML=`<section class="apex-auth-card" role="dialog" aria-modal="true" aria-labelledby="apexAuthTitle"><button type="button" class="auth-close" aria-label="关闭登录窗口">×</button><div class="apex-auth-lock" aria-hidden="true">△</div><div class="apex-auth-kicker">ERE / PRIVATE ARCHIVE</div><h2 id="apexAuthTitle">${apex?'登录开箱记录':'进入私人档案'}</h2><p class="apex-auth-copy">输入博客密码，继续${apex?'查看与同步开箱记录':'阅读与整理技术记录'}。</p><form id="apexAuthForm"><label for="apexAuthPassword">登录密码<input id="apexAuthPassword" type="password" autocomplete="current-password" required placeholder="输入密码"></label><div class="apex-auth-actions"><button class="apex-auth-submit" type="submit">登录档案</button></div><p class="apex-auth-status" id="apexAuthStatus" role="status" aria-live="polite"></p></form><p class="auth-footnote">私人内容仅在登录后显示。按 ESC 返回页面。</p></section>`;
+    modal.innerHTML=`<section class="apex-auth-card" role="dialog" aria-modal="true" aria-labelledby="apexAuthTitle"><button type="button" class="auth-close" aria-label="关闭登录窗口">×</button><div class="apex-auth-lock" aria-hidden="true">△</div><div class="apex-auth-kicker">ERE / SIGN IN</div><h2 id="apexAuthTitle">${apex?'登录开箱记录':'登录查看笔记'}</h2><p class="apex-auth-copy">输入博客密码，继续${apex?'查看与同步开箱记录':'阅读与整理技术笔记'}。</p><form id="apexAuthForm"><label for="apexAuthPassword">登录密码<input id="apexAuthPassword" type="password" autocomplete="current-password" required placeholder="输入密码"></label><div class="apex-auth-actions"><button class="apex-auth-submit" type="submit">登录</button></div><p class="apex-auth-status" id="apexAuthStatus" role="status" aria-live="polite"></p></form><p class="auth-footnote">私人内容仅在登录后显示。按 ESC 返回页面。</p></section>`;
     document.body.append(modal);state.modal=modal;
     modal.querySelector('.auth-close').onclick=close;
     modal.addEventListener('keydown',event=>{

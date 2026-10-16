@@ -44,3 +44,7 @@ python -m http.server 4173
 ## 资产与署名
 
 `siamese-cat.png` 头像来自 [XHBlogs](https://github.com/heiehiehi/XinghuisamaBlogs)，保留 CC BY-NC 4.0 署名。当前封面与影像选集使用 SWAV、GUWEIZ 和 loundraw 的人物与城市环境插画。WebP 清晰版保留原图 1920–3271 像素宽度，另提供 800 像素缩略图，均位于 `assets/artwork/`；逐图作者、来源及尺寸见 `sources.json`。游戏相册保留原有的 Apex 画面。详细说明见 `ATTRIBUTION.md`。
+
+## 文案与交互细节
+
+栏目统一使用「技术笔记」「插画收藏」「Apex 开箱记录」等直接的名称。卡片边线和图片缩放支持鼠标与键盘反馈，主题切换只在主动操作时渐变，音乐唱片仅在播放时旋转；系统减少动态效果时关闭这些动画。滚动动画仍由当前位置控制，可双向播放。

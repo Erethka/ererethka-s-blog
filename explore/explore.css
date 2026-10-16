@@ -17,3 +17,7 @@
 @media(prefers-reduced-motion:reduce){.map-scroll i::after{animation:none;inset:0;}.motion-ready .scene-type,.motion-ready .scene-art,.motion-ready .photo-slice,.motion-ready .scene-stripe{transform:none;}.motion-ready .log-mark{transform:rotate(45deg);}.map-directory>a,.chapter-action span,.chapter-rail a::before{transition:none;}}
 
 @media(min-width:621px) and (max-width:800px){.map-hero{grid-template-columns:1fr;min-height:0;gap:30px;padding:24px 0 48px;}.map-title{font-size:clamp(88px,16vw,125px);}.map-intro>p:not(.map-title){max-width:480px;}.map-directory{width:100%;}}
+
+.chapter-copy h2{line-height:1.5;letter-spacing:0;}
+.chapter-copy>p{font-size:14px;line-height:2.05;}
+.map-intro h1{letter-spacing:0;}
