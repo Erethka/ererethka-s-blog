@@ -74,11 +74,12 @@ function initMobileNav() {
 }
 
 function currentNav() {
+  if (body?.dataset.route === "explore") return "explore";
   if (body?.dataset.route === "updates") return "updates";
   if (body?.dataset.route === "apex") return "apex";
   if (["dev","reader"].includes(body?.dataset.route)) return "dev";
   const hash = location.hash.replace(/^#/, "");
-  return ["projects", "timeline", "photowall", "music", "about"].includes(hash) ? hash : "home";
+  return hash === "about" ? "about" : "home";
 }
 
 function updateNav() {
@@ -114,7 +115,7 @@ function initSearch() {
   const entries = [
     { title: "Apex 开箱记录", detail: "500 包保底循环 / Apex Legends", href: "apex/index.html" },
     { title: "技术档案", detail: "技术记录 / 开发笔记 / Markdown / 实验与问题解法", href: "dev/index.html" },
-    { title: "档案索引", detail: "项目 / 技术记录 / 照片墙 / 游戏", href: "#projects" },
+    { title: "探索内容地图", detail: "档案索引 / 目录 / 技术记录 / 照片墙 / 游戏", href: "explore/index.html" },
     { title: "照片墙", detail: "影像档案 / 相册 / 雾与火 / 等一班车 / 游戏时刻 / 夜航", href: "photowall/index.html" },
     { title: "音乐角落", detail: "日常旋律 / 网易云音乐", href: "#music" },
     { title: "站点动态与使用说明", detail: "更新日志 / RSS 订阅 / 登录指南 / Markdown / 备份", href: "updates/index.html" },
