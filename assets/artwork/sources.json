@@ -1,0 +1,62 @@
+[
+  {
+    "name": "swav-resurgum",
+    "artist": "SWAV",
+    "work": "ReSURGUM",
+    "source": "https://pixiv-waengallery.com/exhibition/swav_resurgum/",
+    "image": "https://pixiv-waengallery.com/gallery/wp-content/uploads/2022/02/eeex_swav_PC.jpg",
+    "originalSize": [
+      2150,
+      966
+    ],
+    "smallSize": [
+      800,
+      359
+    ]
+  },
+  {
+    "name": "guweiz-subway",
+    "artist": "GUWEIZ",
+    "work": "途中片刻（本站题注）",
+    "source": "https://wall.alphacoders.com/big.php?i=1116513",
+    "image": "https://images2.alphacoders.com/111/1116513.jpg",
+    "originalSize": [
+      3271,
+      1871
+    ],
+    "smallSize": [
+      800,
+      458
+    ]
+  },
+  {
+    "name": "loundraw-rooftop",
+    "artist": "loundraw",
+    "work": "天台来风（本站题注）",
+    "source": "https://wall.alphacoders.com/big.php?i=742755",
+    "image": "https://images4.alphacoders.com/742/742755.png",
+    "originalSize": [
+      1920,
+      1151
+    ],
+    "smallSize": [
+      800,
+      480
+    ]
+  },
+  {
+    "name": "loundraw-city",
+    "artist": "loundraw",
+    "work": "城市上空（本站题注）",
+    "source": "https://www.zerochan.net/2118421",
+    "image": "https://static.zerochan.net/Loundraw.full.2118421.png",
+    "originalSize": [
+      2150,
+      1350
+    ],
+    "smallSize": [
+      800,
+      502
+    ]
+  }
+]

@@ -1,42 +1,52 @@
 (() => {
   const THEME_KEY = "blog-theme";
+  const artworkInfo = {
+  "swav-resurgum": {
+    "artist": "SWAV",
+    "source": "https://pixiv-waengallery.com/exhibition/swav_resurgum/"
+  },
+  "guweiz-subway": {
+    "artist": "GUWEIZ",
+    "source": "https://wall.alphacoders.com/big.php?i=1116513"
+  },
+  "loundraw-rooftop": {
+    "artist": "loundraw",
+    "source": "https://wall.alphacoders.com/big.php?i=742755"
+  },
+  "loundraw-city": {
+    "artist": "loundraw",
+    "source": "https://www.zerochan.net/2118421"
+  }
+};
+  const artwork = (name, caption) => ({
+    src: `../assets/artwork/${name}.webp`,
+    thumbnail: `../assets/artwork/${name}-small.webp`,
+    caption,
+    source: artworkInfo[name].source,
+    credit: `© ${artworkInfo[name].artist}`
+  });
   const albums = [
     {
-      title: "雾与火",
-      date: "2026 · SPRING",
-      description: "明亮的色彩，春日的收藏。",
-      photos: [
-        { src: "../assets/backgrounds/light/hu-tao.jpg", caption: "01 · 雾与火" },
-        { src: "../assets/backgrounds/light/anime-spring.jpg", caption: "02 · 春日漫游" }
-      ]
+      title: "城市切片", aliases: ["雾与火", "灰阶肖像"], date: "CURATED / CITY FRAGMENTS",
+      description: "人物、建筑与风，一起留在画面里。",
+      photos: [artwork("loundraw-city", "01 · 城市上空 / loundraw"), artwork("swav-resurgum", "02 · ReSURGUM / SWAV")]
     },
     {
-      title: "等一班车",
-      date: "2026 · DAILY",
-      description: "车站、街角与途中的片刻。",
-      photos: [
-        { src: "../assets/backgrounds/light/station-girl.jpg", caption: "01 · 等一班车" },
-        { src: "../assets/backgrounds/light/snowy-profile.jpg", caption: "02 · 雪落之后" }
-      ]
+      title: "冷光片段", aliases: ["等一班车"], date: "CURATED / ON THE WAY",
+      description: "车厢里的短暂停留，也有自己的光线。",
+      photos: [artwork("guweiz-subway", "01 · 途中片刻 / GUWEIZ")]
     },
     {
-      title: "游戏时刻",
-      date: "2026 · GAME",
+      title: "游戏时刻", date: "2026 · GAME",
       description: "角色与战场，游戏里的记忆。",
       photos: [
-        { src: "../assets/backgrounds/light/apex-champions.jpg", caption: "01 · Apex时刻" },
-        { src: "../assets/backgrounds/dark/kaisel.jpg", caption: "02 · 夜航" }
+        { src: "../assets/backgrounds/light/apex-champions.jpg", caption: "01 · Apex时刻" }
       ]
     },
     {
-      title: "夜航",
-      date: "ARCHIVE · 2026",
-      description: "夜色中的光与安静画面。",
-      photos: [
-        { src: "../assets/backgrounds/dark/kaisel.jpg", caption: "01 · 夜航" },
-        { src: "../assets/backgrounds/dark/solo-leveling.jpg", caption: "02 · 深夜记录" },
-        { src: "../assets/backgrounds/light/anime-spring.jpg", caption: "03 · 返程" }
-      ]
+      title: "天台来风", aliases: ["夜航"], date: "CURATED / ROOFTOP AIR",
+      description: "城市很远，风恰好经过。",
+      photos: [artwork("loundraw-rooftop", "01 · 天台来风 / loundraw")]
     }
   ];
 
@@ -75,7 +85,7 @@
     const keyword = query.trim().toLowerCase();
     const visible = albums.filter((album) => {
       if (!keyword) return true;
-      return [album.title, album.date, album.description, ...album.photos.map((photo) => photo.caption)].join(" ").toLowerCase().includes(keyword);
+      return [album.title, ...(album.aliases || []), album.date, album.description, ...album.photos.map((photo) => photo.caption)].join(" ").toLowerCase().includes(keyword);
     });
 
     grid.innerHTML = visible.map((album) => {
@@ -84,7 +94,7 @@
       const number = String(albumIndex + 1).padStart(2, "0");
       return `<article class="album-card" data-album="${albumIndex}" tabindex="0" role="button" aria-label="打开相册 ${escapeHtml(album.title)}，${album.photos.length} 张照片">
         <div class="album-card-top"><span><i aria-hidden="true">■</i>COLLECTION / ${number}</span><span>${escapeHtml(album.date)}</span></div>
-        <div class="album-preview${preview.length > 2 ? " has-three" : ""}" aria-hidden="true">${preview.map((photo) => `<img src="${photo.src}" alt="" loading="lazy">`).join("")}</div>
+        <div class="album-preview${preview.length > 2 ? " has-three" : preview.length === 1 ? " is-single" : ""}" aria-hidden="true">${preview.map((photo) => `<img src="${photo.thumbnail || photo.src}" alt="" loading="lazy" decoding="async">`).join("")}</div>
         <div class="album-info">
           <div><h3>${escapeHtml(album.title)}</h3><p>${escapeHtml(album.description)}</p></div><span class="album-open" aria-hidden="true">↗</span>
         </div>
@@ -109,7 +119,7 @@
     $("albumTitle").textContent = album.title;
     $("albumDate").textContent = album.date;
     $("albumDescription").textContent = album.description;
-    albumPhotoGrid.innerHTML = album.photos.map((photo, photoIndex) => `<button class="album-photo" type="button" data-photo="${photoIndex}" aria-label="查看照片 ${escapeHtml(photo.caption)}"><img src="${photo.src}" alt="" loading="lazy"><span>${escapeHtml(photo.caption)}</span></button>`).join("");
+    albumPhotoGrid.innerHTML = album.photos.map((photo, photoIndex) => `<button class="album-photo" type="button" data-photo="${photoIndex}" aria-label="查看照片 ${escapeHtml(photo.caption)}"><img src="${photo.thumbnail || photo.src}" alt="" loading="lazy" decoding="async"><span>${escapeHtml(photo.caption)}</span></button>`).join("");
     albumPhotoGrid.querySelectorAll(".album-photo").forEach((figure) => figure.addEventListener("click", () => openLightbox(Number(figure.dataset.photo))));
     setOpen(albumModal, true);
     writeRoute();
@@ -134,6 +144,11 @@
     lightboxImage.src = photo.src;
     lightboxImage.alt = photo.caption;
     lightboxCaption.textContent = photo.caption;
+    const source = $("artworkSource"), credit = $("artworkCredit");
+    source.hidden = !photo.source;
+    if (photo.source) source.href = photo.source; else source.removeAttribute("href");
+    credit.hidden = !photo.credit;
+    credit.textContent = photo.credit || "";
     lightboxCounter.textContent = `${activePhoto + 1} / ${albums[activeAlbum].photos.length}`;
     $("openOriginal").href=photo.src;
     if(lightbox.classList.contains("open"))writeRoute();
@@ -196,7 +211,7 @@
     document.addEventListener("keydown", (event) => {
       const currentDialog = lightbox.classList.contains("open") ? lightbox : albumModal.classList.contains("open") ? albumModal : null;
       if (currentDialog && event.key === "Tab") {
-        const focusable = [...currentDialog.querySelectorAll("button, [tabindex='0']")];
+        const focusable = [...currentDialog.querySelectorAll("button, a[href], [tabindex='0']")];
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -220,7 +235,7 @@
   initMenu();
   initModalEvents();
   renderAlbums();
-  const params=new URLSearchParams(location.search),albumIndex=albums.findIndex(album=>album.title===params.get("album"));
+  const params=new URLSearchParams(location.search),albumIndex=albums.findIndex(album=>album.title===params.get("album")||album.aliases?.includes(params.get("album")));
   const photo=Number(params.get("photo"));
   if(albumIndex>=0){openAlbum(albumIndex);if(Number.isInteger(photo)&&photo>0&&photo<=albums[albumIndex].photos.length)openLightbox(photo-1);}
 })();
