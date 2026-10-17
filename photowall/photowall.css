@@ -70,3 +70,5 @@ body[data-route="photowall"] a { color:inherit; }
 .photo-hero h1{letter-spacing:0;font-weight:600;}
 .photo-hero-copy>p{font-size:13px;line-height:2;letter-spacing:0;}
 .album-info p{font-size:12px;line-height:1.9;}
+.photo-brand strong{font-size:25px;line-height:1;font-weight:600;letter-spacing:.015em;}
+@media(max-width:720px){.photo-brand strong{font-size:23px;}}

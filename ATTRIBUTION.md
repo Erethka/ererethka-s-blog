@@ -4,7 +4,7 @@
 
 ## 站点标识与界面
 
-`assets/identity/ere-mark.svg` 和 `assets/favicon.svg` 为本博客绘制的 E 字母几何标记，未使用第三方头像。基础样式位于 `base.css`，共享主题与导航位于 `site-polish.css`，各页面的版式和交互由本项目维护。
+`assets/identity/erelog-mark.svg` 和 `assets/favicon.svg` 为本博客绘制的 Erelog 折页字母标记，未使用第三方头像。基础样式位于 `base.css`，共享主题与导航位于 `site-polish.css`，各页面的版式和交互由本项目维护。
 
 编号、直角组件、细线与信息层级参考了[《明日方舟》官网](https://ak.hypergryph.com/)的平面设计语言。界面由本站实现，未使用官方标识；相关名称和商标归各自权利人所有，本站与官方无关联。
 

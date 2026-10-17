@@ -1,4 +1,4 @@
-# ererethka の 宝藏之地
+# Erelog
 
 静态个人博客，包含开发笔记、插画相册与 Apex 开箱记录。页面使用深灰／纸色双主题、黄绿色点缀、编号与细线，平面设计参考《明日方舟》的信息编排风格。
 
@@ -18,7 +18,7 @@
 
 `base.css` 提供基础布局与浏览器默认样式整理；`site-polish.css` 管理共享配色、导航、登录窗与控件。首页版式在 `styles-polish.css`，子页面的版式位于各自目录。
 
-`assets/identity/ere-mark.svg` 为本站绘制的几何字母标记，用于导航和首页资料卡；浏览器图标位于 `assets/favicon.svg`。当前版本不依赖旧头像、旧背景配置或旧的整页参考样式层。
+`assets/identity/erelog-mark.svg` 为本站绘制的折页字母标记，用于导航和首页资料卡；浏览器图标提供 `assets/favicon.svg` 与多尺寸 `assets/favicon.ico`，并包含 180 像素主屏幕图标及 512 像素 PNG 标记。当前版本不依赖旧头像、旧背景配置或旧的整页参考样式层。
 
 `motion.css` 和 `motion.js` 以滚动位置控制遮罩、细线、图形位移、章节定位和滚动进度；下滚展开，上滚收回。`navigation-motion.js` 处理页面过渡与主动主题切换。减少动态效果模式会关闭动画，禁用 JavaScript 时正文仍可阅读。
 

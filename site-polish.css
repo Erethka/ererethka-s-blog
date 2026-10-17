@@ -31,6 +31,8 @@ button,input,select,textarea { font-family:inherit; }
 .brand,.photo-brand { display:inline-flex; align-items:center; gap:11px; min-width:0; color:var(--ark-text); text-decoration:none; }
 .brand-copy strong,.photo-brand strong { display:block; font:600 13px/1.5 "Noto Sans SC",sans-serif; letter-spacing:.02em; white-space:nowrap; }
 .brand-copy strong em,.photo-brand strong em { color:var(--ark-accent); font-style:normal; }
+.brand-copy strong,.photo-brand strong{font:600 25px/1 "Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:.015em;}
+.wordmark-accent{color:var(--ark-accent);}
 .brand-copy small,.photo-brand small { display:block; margin-top:4px; color:var(--ark-muted); font:400 7px/1.4 "IBM Plex Mono",Consolas,monospace; letter-spacing:.1em; }
 .brand-mark,.photo-brand-mark { display:flex; align-items:center; justify-content:center; gap:3px; width:32px; height:32px; border:1px solid var(--ark-line); border-radius:1px; background:var(--ark-soft); transform:none; box-shadow:none; flex-shrink:0; }
 .brand-mark img,.photo-brand-mark img { display:block; width:100%; height:100%; object-fit:contain; }
@@ -57,6 +59,7 @@ body .apex-auth-card h2 { font-weight:500; }.apex-auth-card .apex-auth-lock { co
 @media(max-width:720px) {
   .site-nav,.photo-nav { position:sticky; }.nav-inner,.photo-nav-inner { width:calc(100% - 32px); height:66px; gap:10px; }.brand,.photo-brand { gap:8px; }
   .brand-copy strong,.photo-brand strong { font-size:12px; }.brand-copy small,.photo-brand small { font-size:6px; }.brand-mark,.photo-brand-mark { width:29px; height:29px; }
+  .brand-copy strong,.photo-brand strong{font-size:23px;}
   .theme-button,.photo-theme-button { min-width:34px; width:34px; padding:0; }.theme-button span:last-child,.photo-theme-button span:last-child { display:none; }.nav-actions,.photo-nav-actions { gap:7px; }
   .mobile-menu-button,.photo-menu-button { width:34px; min-width:34px; }
 }

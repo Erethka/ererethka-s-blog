@@ -20,7 +20,7 @@
       const listRes=await authFetch(API); if(!listRes.ok)throw new Error(`文档列表读取失败（${listRes.status}）`); const list=await listRes.json(); const docs=(Array.isArray(list.documents)?list.documents:[]).sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))||String(a.title||"").localeCompare(String(b.title||"")));
       const idx=docs.findIndex(d=>d.path===path); if(idx<0)throw new Error("找不到这篇技术笔记。");
       const res=await authFetch(`${API}?path=${encodeURIComponent(path)}`); if(!res.ok)throw new Error(`文档读取失败（${res.status}）`); const data=await res.json(); const {meta,body}=parseFrontMatter(data.content||"");
-      const title=meta.title||(data.path||path).split("/").pop().replace(/\.md$/i,""); document.title=`${title} · Erethka`; $("docTitle").textContent=title;
+      const title=meta.title||(data.path||path).split("/").pop().replace(/\.md$/i,""); document.title=`${title} · Erelog`; $("docTitle").textContent=title;
       const tags=Array.isArray(meta.tags)?meta.tags:(meta.tags?[meta.tags]:[]); $("docMeta").textContent=[meta.category||"其他",meta.status==="published"?"正式":meta.status==="archived"?"归档":"草稿",meta.date||""].filter(Boolean).join(" · ");
       $("docTags").innerHTML=tags.map(t=>`<a class="reader-tag" href="./index.html?tag=${encodeURIComponent(t)}">#${escapeHtml(t)}</a>`).join("");
       const first=body.match(/^\s*#\s+([^\n]+)\n*/);
