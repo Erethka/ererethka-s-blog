@@ -1,8 +1,10 @@
 # 资产与样式归因
 
-本项目的页面布局与交互风格参考并改编自 [XHBlogs](https://github.com/heiehiehi/XinghuisamaBlogs)（作者：XingHuiSama）。参考项目使用 Creative Commons Attribution-NonCommercial 4.0 International（CC BY-NC 4.0）许可；本项目保留非商业使用说明和原项目链接。
+本项目早期页面参考并改编自 [XHBlogs](https://github.com/heiehiehi/XinghuisamaBlogs)（作者：XingHuiSama），此后进行了多次重构。原项目采用 [Creative Commons Attribution-NonCommercial 4.0 International（CC BY-NC 4.0）](https://creativecommons.org/licenses/by-nc/4.0/)。仍来自原项目的素材和改编内容，继续遵守其原有许可；重构本身不解除这些要求。该声明不表示整站全部代码、个人文章和第三方插画统一采用 CC BY-NC 4.0。
 
-仓库中的 `siamese-cat.png` 来自 XHBlogs 的 `public/siamese-cat.png`，用于首页资料卡头像。历史背景资源保留在 `assets/backgrounds/`，来自本项目原有的本地 Wallpaper Engine 静态预览资源。
+网页中的「素材与许可」入口链接至 [credits.html](credits.html)，集中展示署名、作品来源、修改方式和许可链接。本次整理不删除既有版权声明，不对本站新增内容另行指定开源许可证。
+
+仓库中的 `siamese-cat.png` 来自 XHBlogs 的 `public/siamese-cat.png`，用于首页资料卡头像；网页通过 CSS 裁切并以像素样式缩放显示。素材保留原项目的许可与免责声明，见[原项目 LICENSE](https://github.com/heiehiehi/XinghuisamaBlogs/blob/main/LICENSE)。历史背景资源保留在 `assets/backgrounds/`，来自本项目原有的本地 Wallpaper Engine 静态预览资源。
 
 本项目新增的页面代码、Apex 记录逻辑和个人数据结构由 ererethka 维护。Apex Legends 为 Electronic Arts/Respawn Entertainment 的商标，本项目仅用于个人记录，不代表官方产品。
 
