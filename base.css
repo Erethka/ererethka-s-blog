@@ -1,0 +1,20 @@
+/* Browser defaults and layout primitives for this static blog. */
+*,*::before,*::after{box-sizing:border-box;}
+html{min-height:100%;scroll-behavior:smooth;}
+body{margin:0;min-height:100vh;-webkit-font-smoothing:antialiased;}
+button,input,select,textarea{font:inherit;color:inherit;}
+button{border:0;background:transparent;cursor:pointer;}
+button:disabled{cursor:default;}
+a{color:inherit;}
+img{max-width:100%;}
+[hidden]{display:none!important;}
+.page-container{margin-inline:auto;}
+.search-wrap{position:relative;}
+.search-results{position:absolute;z-index:6;}
+.social-row{display:flex;}
+.social-row :is(a,button){display:grid;place-items:center;text-decoration:none;}
+.primary-button,.outline-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 16px;text-decoration:none;}
+.outline-button{border:1px solid;}
+.toast{position:fixed;inset:auto auto 24px 50%;visibility:hidden;opacity:0;pointer-events:none;transform:translate(-50%,8px);transition:opacity .2s,transform .2s,visibility .2s;}
+.toast.show{visibility:visible;opacity:1;transform:translate(-50%,0);}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}.toast{transition:none;}}

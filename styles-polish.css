@@ -18,7 +18,7 @@ body[data-route="home"] { --home-text:var(--ark-text); --home-muted:var(--ark-mu
 .home-hero { display:grid; grid-template-columns:310px minmax(0,1fr); gap:18px; margin-bottom:36px; }
 .profile-panel { position:relative; display:flex; flex-direction:column; padding:27px; }.profile-panel::after { content:"＋"; position:absolute; right:12px; bottom:10px; color:var(--ark-muted); font:400 11px "IBM Plex Mono",monospace; }
 .profile-intro { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:29px; }
-.hero-avatar { width:63px; height:63px; flex-shrink:0; border:1px solid var(--ark-line); border-radius:1px; background-color:var(--ark-soft); background-image:url("siamese-cat.png"); background-size:280px 280px; background-position:-12px -11px; background-repeat:no-repeat; image-rendering:pixelated; }
+.hero-avatar { position:relative; width:63px; height:63px; flex-shrink:0; border:1px solid var(--ark-line); background:var(--ark-panel) url("assets/identity/ere-mark.svg") center/contain no-repeat; }
 .profile-status { display:flex; align-items:center; gap:6px; color:var(--ark-muted); font-size:9px; white-space:nowrap; }.profile-status i { width:4px; height:4px; background:var(--ark-accent); }
 .hero-greeting { color:var(--ark-muted); font:400 9px/1.6 "IBM Plex Mono",monospace; letter-spacing:.07em; }
 .profile-panel h1 { margin:7px 0 16px; font:600 55px/1.1 "Barlow Condensed","Arial Narrow",sans-serif; letter-spacing:-.02em; }.profile-panel h1>span { color:var(--ark-accent); }
@@ -84,3 +84,5 @@ body[data-route="home"] { --home-text:var(--ark-text); --home-muted:var(--ark-mu
   .home-about{grid-template-columns:1fr;gap:18px;padding:29px 0;}.home-about>a{grid-column:auto;}
   .home-about p{font-size:13px;}.hero-intro{font-size:13px;}.site-log li{font-size:12px;}
 }
+
+.hero-avatar::after{content:"";position:absolute;inset:-5px;background:linear-gradient(var(--ark-accent),var(--ark-accent)) left top/13px 1px no-repeat,linear-gradient(var(--ark-accent),var(--ark-accent)) left top/1px 13px no-repeat,linear-gradient(var(--ark-line),var(--ark-line)) right bottom/13px 1px no-repeat,linear-gradient(var(--ark-line),var(--ark-line)) right bottom/1px 13px no-repeat;pointer-events:none;}
