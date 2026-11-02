@@ -2,6 +2,7 @@ const DATA_REPO = "Erethka/apex-loot-data";
 const DATA_PATH = "data/apex-records.json";
 const DATA_BRANCH = "main";
 const DOCS_ROOT = "docs";
+const BOOKMARKS_PATH = "data/bookmarks.json";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 const MAX_LOGIN_ATTEMPTS = 5;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
@@ -33,6 +34,9 @@ export default {
       }
       if (url.pathname === "/apex" && request.method === "PUT") {
         return corsResponse(await putApex(request, env), origin, env);
+      }
+      if (url.pathname === "/bookmarks" && ["GET", "PUT"].includes(request.method)) {
+        return corsResponse(await bookmarks(request, env), origin, env);
       }
       if (url.pathname === "/documents" && request.method === "GET") {
         return corsResponse(await getDocuments(request, env), origin, env);
@@ -526,6 +530,52 @@ async function deleteDocument(request, env) {
   }
 
   return json({ ok: true, path });
+}
+
+async function bookmarks(request, env) {
+  if (!(await readSession(request, env))) return json({ error: "Unauthorized" }, 401);
+  if (request.method === "GET") {
+    const response = await githubRequest(env, "GET", null, BOOKMARKS_PATH);
+    if (response.status === 404) return json({ items: [], sha: null });
+    if (!response.ok) return json({ error: "读取收藏失败" }, 502);
+    const data = await response.json();
+    let items;
+    try { items = JSON.parse(decodeGithubContent(data.content)).items; }
+    catch { return json({ error: "收藏数据格式无效" }, 502); }
+    return json({ items: Array.isArray(items) ? items : [], sha: data.sha });
+  }
+  const body = await request.json().catch(() => null);
+  if (!body || !Array.isArray(body.items) || body.items.length > 2000 || JSON.stringify(body).length > 500000)
+    return json({ error: "收藏数据无效或超出限制" }, 400);
+  const items = [];
+  const ids = new Set();
+  for (const entry of body.items) {
+    if (!entry || typeof entry !== "object") return json({ error: "收藏格式无效" }, 400);
+    const { id, url, title, description = "", tags = [], createdAt } = entry;
+    if (typeof id !== "string" || !/^[a-zA-Z0-9-]{1,80}$/.test(id) || ids.has(id) ||
+        typeof url !== "string" || url.length > 2048 ||
+        typeof title !== "string" || !title.trim() || title.length > 160 ||
+        typeof description !== "string" || description.length > 1000 ||
+        !Array.isArray(tags) || tags.length > 15 || tags.some(t => typeof t !== "string" || t.length > 40) ||
+        typeof createdAt !== "string" || !Number.isFinite(Date.parse(createdAt)))
+      return json({ error: "收藏字段不合法" }, 400);
+    try { if (!["http:", "https:"].includes(new URL(url).protocol)) throw Error(); }
+    catch { return json({ error: "仅支持 HTTP/HTTPS 网址" }, 400); }
+    ids.add(id);
+    items.push({ id, url, title: title.trim(), description, tags, createdAt });
+  }
+  const current = await githubRequest(env, "GET", null, BOOKMARKS_PATH);
+  if (current.status !== 404 && !current.ok) return json({ error: "检查数据版本失败" }, 502);
+  const data = current.ok ? await current.json() : null;
+  if ((data?.sha || null) !== (body.sha || null)) return json({ error: "其他设备已修改收藏，请刷新后重试" }, 409);
+  const response = await githubRequest(env, "PUT", {
+    message: "feat: sync private bookmarks",
+    content: encodeGithubContent(JSON.stringify({ version: 1, items }, null, 2)),
+    branch: DATA_BRANCH, ...(data?.sha ? { sha: data.sha } : {})
+  }, BOOKMARKS_PATH);
+  if (!response.ok) return json({ error: response.status === 409 ? "版本冲突，请刷新" : "保存收藏失败" }, response.status === 409 ? 409 : 502);
+  const saved = await response.json();
+  return json({ ok: true, sha: saved.content?.sha || null });
 }
 
 async function githubRequest(env, method, body, path) {
